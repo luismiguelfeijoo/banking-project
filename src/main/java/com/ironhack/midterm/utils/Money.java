@@ -1,9 +1,11 @@
 package com.ironhack.midterm.utils;
 
+import javax.persistence.Embeddable;
 import java.math.RoundingMode;
 import java.math.BigDecimal;
 import java.util.Currency;
 
+@Embeddable
 public class Money {
     //private static final Currency USD = Currency.getInstance("USD");
     private static final Currency EUR = Currency.getInstance("EUR");
