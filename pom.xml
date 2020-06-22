@@ -60,9 +60,8 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>nl.garvelink.oss</groupId>
-			<artifactId>iban</artifactId>
-			<version>1.6.1</version>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
 	</dependencies>
 

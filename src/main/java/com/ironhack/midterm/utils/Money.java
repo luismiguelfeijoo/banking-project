@@ -1,6 +1,8 @@
 package com.ironhack.midterm.utils;
 
 import javax.persistence.Embeddable;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import java.math.RoundingMode;
 import java.math.BigDecimal;
 import java.util.Currency;
@@ -11,24 +13,26 @@ public class Money {
     private static final Currency EUR = Currency.getInstance("EUR");
     private static final RoundingMode DEFAULT_ROUNDING = RoundingMode.HALF_EVEN;
     private final Currency currency;
+    @NotNull
+    @Positive
     private BigDecimal amount;
     /**
      * Class constructor specifying amount, currency, and rounding
      **/
-    public Money(BigDecimal amount, Currency currency, RoundingMode rounding) {
+    public Money(@NotNull @Positive BigDecimal amount, Currency currency, RoundingMode rounding) {
         this.currency = currency;
         setAmount(amount.setScale(currency.getDefaultFractionDigits(), rounding));
     }
     /**
      * Class constructor specifying amount, and currency. Uses default RoundingMode HALF_EVEN.
      **/
-    public Money(BigDecimal amount, Currency currency) {
+    public Money(@NotNull @Positive BigDecimal amount, Currency currency) {
         this(amount, currency, DEFAULT_ROUNDING);
     }
     /**
      * Class constructor specifying amount. Uses default RoundingMode HALF_EVEN and default currency EUR.
      **/
-    public Money(BigDecimal amount) {
+    public Money(@NotNull @Positive BigDecimal amount) {
         this(amount, EUR, DEFAULT_ROUNDING);
     }
 

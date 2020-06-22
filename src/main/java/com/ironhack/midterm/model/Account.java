@@ -2,30 +2,36 @@ package com.ironhack.midterm.model;
 
 import com.ironhack.midterm.enums.AccountStatus;
 import com.ironhack.midterm.utils.Money;
-import nl.garvelink.iban.IBAN;
 
 import javax.persistence.*;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.util.Optional;
 
 @Entity
-public class Account {
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+public abstract class Account {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.TABLE)
     private Long id;
 
+    private String secretKey;
+
     @Embedded
+    @Valid
     @AttributeOverrides({
             @AttributeOverride(name="amount", column=@Column(name="account_balance")),
             @AttributeOverride(name="currency", column=@Column(name="account_currency"))
     })
     private Money balance;
 
+    @NotNull
     @ManyToOne
     private User primaryOwner;
     @ManyToOne
     private User secondaryOwner;
-    private BigDecimal penaltyFee;
+    private final BigDecimal penaltyFee = new BigDecimal("40");
+
     private AccountStatus status;
 
     public Account() {
@@ -34,22 +40,22 @@ public class Account {
     /**
      * Class constructor specifying balance, both owners
      **/
-    public Account(Money balance, User primaryOwner, User secondaryOwner, BigDecimal penaltyFee) {
+    /*
+    public Account(Money balance, User primaryOwner, User secondaryOwner) {
         this.balance = balance;
         this.primaryOwner = primaryOwner;
         this.secondaryOwner = secondaryOwner;
-        this.penaltyFee = penaltyFee;
         this.status = AccountStatus.ACTIVE;
     }
+     */
 
     /**
      * Class constructor specifying balance, both owners
      **/
-    public Account(Money balance, User primaryOwner, BigDecimal penaltyFee) {
+    public Account(Money balance, User primaryOwner) {
         this.balance = balance;
         this.primaryOwner = primaryOwner;
         this.secondaryOwner = null;
-        this.penaltyFee = penaltyFee;
         this.status = AccountStatus.ACTIVE;
     }
 
@@ -89,10 +95,6 @@ public class Account {
         return penaltyFee;
     }
 
-    public void setPenaltyFee(BigDecimal penaltyFee) {
-        this.penaltyFee = penaltyFee;
-    }
-
     public AccountStatus getStatus() {
         return status;
     }
@@ -100,4 +102,15 @@ public class Account {
     public void setStatus(AccountStatus status) {
         this.status = status;
     }
+
+    /*
+    public String getSecretKey() {
+        return secretKey;
+    }
+
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
+    }
+
+     */
 }

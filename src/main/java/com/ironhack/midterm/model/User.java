@@ -5,11 +5,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class User {
 
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @GeneratedValue(strategy= GenerationType.TABLE)
     private Long id;
     private String username;
     private String name;

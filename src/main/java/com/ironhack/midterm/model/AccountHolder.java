@@ -8,21 +8,37 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class AccountHolder extends User {
 
     private Date dateOfBirth;
     @Embedded
     private Address primaryAddress;
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name="street", column=@Column(name="mailing_street")),
+            @AttributeOverride(name="city", column=@Column(name="mailing_city")),
+            @AttributeOverride(name="country", column=@Column(name="mailing_country")),
+            @AttributeOverride(name="zip", column=@Column(name="mailing_zip"))
+    })
     private Address mailingAddress;
     @OneToMany(mappedBy = "primaryOwner")
     private List<Account> primaryAccounts;
     @OneToMany(mappedBy = "secondaryOwner")
     private List<Account> secondaryAccounts;
 
-    public AccountHolder(String username, String name, Role role, String password, Date dateOfBirth, Address primaryAddress, Address mailingAddress, List<Account> primaryAccounts, List<Account> secondaryAccounts) {
+    // private boolean canAccess;
 
+    /*
+    public boolean canAccess(Account account) {
+        if (Account.primaryOwner.equals(this)) return true;
+        return false;
+     }
+     */
+
+    public AccountHolder() {
+    }
+
+    public AccountHolder(String username, String name, Role role, String password, Date dateOfBirth, Address primaryAddress, Address mailingAddress, List<Account> primaryAccounts, List<Account> secondaryAccounts) {
         this.dateOfBirth = dateOfBirth;
         this.primaryAddress = primaryAddress;
         this.mailingAddress = mailingAddress;
