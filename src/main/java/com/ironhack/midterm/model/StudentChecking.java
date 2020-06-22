@@ -16,7 +16,7 @@ public class StudentChecking extends Account{
     }
      */
 
-    public StudentChecking(Money balance, User primaryOwner) {
+    public StudentChecking(Money balance, AccountHolder primaryOwner) {
         super(balance, primaryOwner);
     }
 }

@@ -17,14 +17,14 @@ public class CreditCard extends Account {
     private BigDecimal interestRate;
 
 
-    public CreditCard(Money balance, User primaryOwner, @DecimalMax(value = "100000") BigDecimal creditLimit, @DecimalMin(value = "0.1") BigDecimal interestRate) {
+    public CreditCard(Money balance, AccountHolder primaryOwner, @DecimalMax(value = "100000") BigDecimal creditLimit, @DecimalMin(value = "0.1") BigDecimal interestRate) {
         super(balance, primaryOwner);
         this.creditLimit = creditLimit;
         this.interestRate = interestRate;
     }
 
 
-    public CreditCard(Money balance, User primaryOwner) {
+    public CreditCard(Money balance, AccountHolder primaryOwner) {
         super(balance, primaryOwner);
     }
 

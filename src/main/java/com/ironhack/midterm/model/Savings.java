@@ -23,7 +23,7 @@ public class Savings extends Account {
     }
      */
 
-    public Savings(Money balance, User primaryOwner, @DecimalMax(value = "0.5") BigDecimal interestRate) {
+    public Savings(Money balance, AccountHolder primaryOwner, @DecimalMax(value = "0.5") BigDecimal interestRate) {
         super(balance, primaryOwner);
         this.interestRate = interestRate;
     }
@@ -34,7 +34,7 @@ public class Savings extends Account {
     }
      */
 
-    public Savings(Money balance, User primaryOwner) {
+    public Savings(Money balance, AccountHolder primaryOwner) {
         super(balance, primaryOwner);
     }
 

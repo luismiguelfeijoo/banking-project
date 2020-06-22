@@ -19,7 +19,7 @@ public class Checking extends Account {
     }
      */
 
-    public Checking(Money balance, User primaryOwner) {
+    public Checking(Money balance, AccountHolder primaryOwner) {
         super(balance, primaryOwner);
     }
 

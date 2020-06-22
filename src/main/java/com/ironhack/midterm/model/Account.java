@@ -27,9 +27,9 @@ public abstract class Account {
 
     @NotNull
     @ManyToOne
-    private User primaryOwner;
+    private AccountHolder primaryOwner;
     @ManyToOne
-    private User secondaryOwner;
+    private AccountHolder secondaryOwner;
     private final BigDecimal penaltyFee = new BigDecimal("40");
 
     private AccountStatus status;
@@ -52,7 +52,7 @@ public abstract class Account {
     /**
      * Class constructor specifying balance, both owners
      **/
-    public Account(Money balance, User primaryOwner) {
+    public Account(Money balance, AccountHolder primaryOwner) {
         this.balance = balance;
         this.primaryOwner = primaryOwner;
         this.secondaryOwner = null;
@@ -79,7 +79,7 @@ public abstract class Account {
         return primaryOwner;
     }
 
-    public void setPrimaryOwner(User primaryOwner) {
+    public void setPrimaryOwner(AccountHolder primaryOwner) {
         this.primaryOwner = primaryOwner;
     }
 
@@ -87,7 +87,7 @@ public abstract class Account {
         return secondaryOwner;
     }
 
-    public void setSecondaryOwner(User secondaryOwner) {
+    public void setSecondaryOwner(AccountHolder secondaryOwner) {
         this.secondaryOwner = secondaryOwner;
     }
 
