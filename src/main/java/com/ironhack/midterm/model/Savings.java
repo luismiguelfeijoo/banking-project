@@ -23,10 +23,12 @@ public class Savings extends Checking {
     }
      */
 
+    /*
     public Savings(Money balance, AccountHolder primaryOwner, @DecimalMax(value = "0.5") BigDecimal interestRate) {
         super(balance, primaryOwner);
         this.interestRate = interestRate;
     }
+     */
 
     /*
     public Savings(Money balance, User primaryOwner, User secondaryOwner) {
@@ -42,10 +44,8 @@ public class Savings extends Checking {
         return interestRate;
     }
 
-
-    /*
-    private void setInterestRate(BigDecimal interestRate)  {
+    public void setInterestRate(BigDecimal interestRate)  {
         this.interestRate = interestRate;
     }
-     */
+
 }

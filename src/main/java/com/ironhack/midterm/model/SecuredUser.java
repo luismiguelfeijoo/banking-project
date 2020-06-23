@@ -1,6 +1,8 @@
 package com.ironhack.midterm.model;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,6 +13,14 @@ public class SecuredUser extends User {
 
     @ManyToMany(fetch= FetchType.EAGER, cascade= CascadeType.ALL, mappedBy="user")
     private Set<Role> roles = new HashSet<>();
+
+    public SecuredUser() {
+    }
+
+    public SecuredUser(@NotNull @NotEmpty String username, @NotNull @NotEmpty String name, String password) {
+        super(username, name);
+        this.password = password;
+    }
 
     public String getPassword() {
         return password;

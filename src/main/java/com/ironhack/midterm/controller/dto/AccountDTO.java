@@ -1,4 +1,76 @@
 package com.ironhack.midterm.controller.dto;
 
+import com.ironhack.midterm.enums.AccountType;
+import com.ironhack.midterm.model.AccountHolder;
+
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
+import java.math.BigDecimal;
+
 public class AccountDTO {
+    @NotNull
+    private AccountType accountType;
+    @NotNull
+    @PositiveOrZero
+    private BigDecimal balance;
+    @NotNull
+    private AccountHolder primaryOwner;
+
+    private AccountHolder secondaryOwner;
+    private BigDecimal creditLimit;
+    private BigDecimal interestRate;
+
+    public AccountDTO(@NotNull AccountType accountType, @NotNull @PositiveOrZero BigDecimal balance, @NotNull AccountHolder primaryOwner) {
+        this.accountType = accountType;
+        this.balance = balance;
+        this.primaryOwner = primaryOwner;
+    }
+
+    public AccountType getAccountType() {
+        return accountType;
+    }
+
+    public void setAccountType(AccountType accountType) {
+        this.accountType = accountType;
+    }
+
+    public BigDecimal getBalance() {
+        return balance;
+    }
+
+    public void setBalance(BigDecimal balance) {
+        this.balance = balance;
+    }
+
+    public AccountHolder getPrimaryOwner() {
+        return primaryOwner;
+    }
+
+    public void setPrimaryOwner(AccountHolder primaryOwner) {
+        this.primaryOwner = primaryOwner;
+    }
+
+    public AccountHolder getSecondaryOwner() {
+        return secondaryOwner;
+    }
+
+    public void setSecondaryOwner(AccountHolder secondaryOwner) {
+        this.secondaryOwner = secondaryOwner;
+    }
+
+    public BigDecimal getInterestRate() {
+        return interestRate;
+    }
+
+    public void setInterestRate(BigDecimal interestRate) {
+        this.interestRate = interestRate;
+    }
+
+    public BigDecimal getCreditLimit() {
+        return creditLimit;
+    }
+
+    public void setCreditLimit(BigDecimal creditLimit) {
+        this.creditLimit = creditLimit;
+    }
 }

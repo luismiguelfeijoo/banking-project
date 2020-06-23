@@ -30,7 +30,7 @@ public abstract class Account {
     private AccountHolder secondaryOwner;
     private final BigDecimal penaltyFee = new BigDecimal("40");
 
-    private AccountStatus status;
+    private AccountStatus status = AccountStatus.ACTIVE;
 
     public Account() {
     }
@@ -54,7 +54,6 @@ public abstract class Account {
         this.balance = balance;
         this.primaryOwner = primaryOwner;
         this.secondaryOwner = null;
-        this.status = AccountStatus.ACTIVE;
     }
 
     public Long getId() {

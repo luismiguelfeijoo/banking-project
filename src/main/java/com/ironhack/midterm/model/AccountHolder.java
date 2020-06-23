@@ -1,8 +1,11 @@
 package com.ironhack.midterm.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ironhack.midterm.utils.Address;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -22,8 +25,10 @@ public class AccountHolder extends SecuredUser {
     })
     private Address mailingAddress;
     @OneToMany(mappedBy = "primaryOwner")
+    @JsonIgnore
     private List<Account> primaryAccounts;
     @OneToMany(mappedBy = "secondaryOwner")
+    @JsonIgnore
     private List<Account> secondaryAccounts;
 
     // private boolean canAccess;
@@ -36,6 +41,12 @@ public class AccountHolder extends SecuredUser {
      */
 
     public AccountHolder() {
+    }
+
+    public AccountHolder(@NotNull @NotEmpty String username, @NotNull @NotEmpty String name, String password, Date dateOfBirth, Address primaryAddress) {
+        super(username, name, password);
+        this.dateOfBirth = dateOfBirth;
+        this.primaryAddress = primaryAddress;
     }
 
     public AccountHolder(String username, String name, Role role, String password, Date dateOfBirth, Address primaryAddress, Address mailingAddress, List<Account> primaryAccounts, List<Account> secondaryAccounts) {
