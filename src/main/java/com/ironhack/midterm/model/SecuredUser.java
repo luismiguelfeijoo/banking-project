@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Inheritance
+@Inheritance(strategy = InheritanceType.JOINED)
 public class SecuredUser extends User {
     private String password;
 

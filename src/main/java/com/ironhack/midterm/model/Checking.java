@@ -8,6 +8,7 @@ import javax.persistence.InheritanceType;
 import java.math.BigDecimal;
 
 @Entity
+@Inheritance(strategy = InheritanceType.JOINED)
 public class Checking extends Account {
     private String secretKey;
     protected BigDecimal minimumBalance = new BigDecimal("250");
