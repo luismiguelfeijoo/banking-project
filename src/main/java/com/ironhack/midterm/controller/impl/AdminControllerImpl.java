@@ -1,15 +1,21 @@
 package com.ironhack.midterm.controller.impl;
 
 import com.ironhack.midterm.controller.dto.AccountDTO;
+import com.ironhack.midterm.controller.dto.ThirdPartyDTO;
 import com.ironhack.midterm.controller.interfaces.AdminController;
 import com.ironhack.midterm.model.Account;
 import com.ironhack.midterm.model.AccountHolder;
+import com.ironhack.midterm.model.ThirdParty;
+import com.ironhack.midterm.service.ThirdPartyService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class AdminControllerImpl implements AdminController {
+    @Autowired
+    private ThirdPartyService thirdPartyService;
 
     @Override
     @PostMapping("/admin/accounts")
@@ -25,8 +31,9 @@ public class AdminControllerImpl implements AdminController {
     }
 
     @Override
-    public void addThirdParty() {
-
+    @PostMapping("/admin/third-party")
+    public ThirdParty addThirdParty(@RequestBody ThirdPartyDTO thirdPartyDTO) {
+        return thirdPartyService.create(thirdPartyDTO);
     }
 
     @Override

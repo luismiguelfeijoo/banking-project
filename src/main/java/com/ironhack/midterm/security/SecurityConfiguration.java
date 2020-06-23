@@ -35,11 +35,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(HttpSecurity httpSecurity) throws Exception {
 
+        httpSecurity.csrf().disable();
         httpSecurity.httpBasic();
-
         httpSecurity.authorizeRequests()
-                .mvcMatchers("/loggedin").authenticated()
-                .mvcMatchers("/roles").hasAuthority("ROLE_TECHNICIAN")
                 .mvcMatchers("/admin").hasAuthority("ROLE_ADMIN")
                 .anyRequest().permitAll();
 

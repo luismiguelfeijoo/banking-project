@@ -3,6 +3,7 @@ package com.ironhack.midterm.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
+import java.util.Set;
 
 @Entity
 @Table
@@ -34,7 +35,7 @@ public class Role {
         this.role = role;
     }
 
-    public User getUser() {
+    public SecuredUser getUsers() {
         return user;
     }
 

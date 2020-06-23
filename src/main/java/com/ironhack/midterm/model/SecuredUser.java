@@ -9,7 +9,7 @@ import java.util.Set;
 public class SecuredUser extends User {
     private String password;
 
-    @OneToMany(fetch= FetchType.EAGER, cascade= CascadeType.ALL, mappedBy="user")
+    @ManyToMany(fetch= FetchType.EAGER, cascade= CascadeType.ALL, mappedBy="user")
     private Set<Role> roles = new HashSet<>();
 
     public String getPassword() {
