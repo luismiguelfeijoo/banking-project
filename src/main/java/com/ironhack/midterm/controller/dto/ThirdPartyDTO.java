@@ -4,16 +4,16 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 public class ThirdPartyDTO {
-    @NotNull
-    @NotEmpty
+    @NotNull(message = "Key is Mandatory")
+    @NotEmpty(message = "Key can't be empty")
     private String key;
 
-    @NotNull
-    @NotEmpty
+    @NotNull(message = "Name is Mandatory")
+    @NotEmpty(message = "Name can't be empty")
     private String name;
 
-    @NotNull
-    @NotEmpty
+    @NotNull(message = "Username is Mandatory")
+    @NotEmpty(message = "Username can't be empty")
     private String username;
 
     public ThirdPartyDTO(@NotNull @NotEmpty String key, @NotNull @NotEmpty String name, @NotNull @NotEmpty String username) {

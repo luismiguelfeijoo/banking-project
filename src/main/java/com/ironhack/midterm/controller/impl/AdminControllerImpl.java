@@ -8,9 +8,12 @@ import com.ironhack.midterm.model.AccountHolder;
 import com.ironhack.midterm.model.ThirdParty;
 import com.ironhack.midterm.service.ThirdPartyService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.validation.Valid;
 
 @RestController
 public class AdminControllerImpl implements AdminController {
@@ -32,7 +35,7 @@ public class AdminControllerImpl implements AdminController {
 
     @Override
     @PostMapping("/admin/third-party")
-    public ThirdParty addThirdParty(@RequestBody ThirdPartyDTO thirdPartyDTO) {
+    public ThirdParty addThirdParty(@Valid @RequestBody ThirdPartyDTO thirdPartyDTO) {
         return thirdPartyService.create(thirdPartyDTO);
     }
 
