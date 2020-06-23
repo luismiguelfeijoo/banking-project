@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
-public class AccountHolder extends User {
+public class AccountHolder extends SecuredUser {
 
     private Date dateOfBirth;
     @Embedded

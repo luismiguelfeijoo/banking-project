@@ -1,6 +1,7 @@
 package com.ironhack.midterm.security;
 
 import com.ironhack.midterm.model.Role;
+import com.ironhack.midterm.model.SecuredUser;
 import com.ironhack.midterm.model.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -10,10 +11,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class CustomSecurityUser extends User implements UserDetails {
+public class CustomSecurityUser extends SecuredUser implements UserDetails {
     private static final long serialVersionUID = -7373627892222L;
 
-    public CustomSecurityUser(User user) {
+    public CustomSecurityUser(SecuredUser user) {
         System.out.println(user);
         this.setRoles(user.getRoles());
         this.setId(user.getId());

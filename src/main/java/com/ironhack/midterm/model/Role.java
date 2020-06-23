@@ -15,7 +15,7 @@ public class Role {
 
     @ManyToOne
     @JsonIgnore
-    private User user;
+    private SecuredUser user;
 
 
     public Long getId() {
@@ -38,7 +38,7 @@ public class Role {
         return user;
     }
 
-    public void setUser(User user) {
+    public void setUser(SecuredUser user) {
         this.user = user;
     }
 }

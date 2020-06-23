@@ -6,6 +6,6 @@ import javax.persistence.InheritanceType;
 
 
 @Entity
-public class Admin extends User{
+public class Admin extends SecuredUser {
 }
 
