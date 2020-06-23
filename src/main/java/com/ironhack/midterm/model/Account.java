@@ -9,13 +9,11 @@ import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 @Entity
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public abstract class Account {
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private String secretKey;
 
     @Embedded
     @Valid
@@ -103,14 +101,4 @@ public abstract class Account {
         this.status = status;
     }
 
-    /*
-    public String getSecretKey() {
-        return secretKey;
-    }
-
-    public void setSecretKey(String secretKey) {
-        this.secretKey = secretKey;
-    }
-
-     */
 }

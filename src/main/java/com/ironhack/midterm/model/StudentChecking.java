@@ -6,17 +6,17 @@ import javax.persistence.Entity;
 import java.math.BigDecimal;
 
 @Entity
-public class StudentChecking extends Account{
-    public StudentChecking() {
-    }
+public class StudentChecking extends Checking {
 
-    /*
-    public StudentChecking(Money balance, User primaryOwner, User secondaryOwner) {
-        super(balance, primaryOwner, secondaryOwner);
-    }
-     */
 
     public StudentChecking(Money balance, AccountHolder primaryOwner) {
         super(balance, primaryOwner);
+        this.minimumBalance = new BigDecimal("0");
+        this.monthlyMaintenanceFee = new BigDecimal("0");
+    }
+
+    public StudentChecking() {
+        this.minimumBalance = new BigDecimal("0");
+        this.monthlyMaintenanceFee = new BigDecimal("0");
     }
 }

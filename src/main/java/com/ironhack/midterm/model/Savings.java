@@ -7,7 +7,7 @@ import javax.validation.constraints.DecimalMax;
 import java.math.BigDecimal;
 
 @Entity
-public class Savings extends Account {
+public class Savings extends Checking {
     @DecimalMax(value = "0.5")
     private BigDecimal interestRate = new BigDecimal("0.0025");
 

@@ -8,10 +8,10 @@ import javax.persistence.InheritanceType;
 import java.math.BigDecimal;
 
 @Entity
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class Checking extends Account {
-    private final BigDecimal minimumBalance = new BigDecimal("250");
-    private final BigDecimal monthlyMaintenanceFee = new BigDecimal("12");
+    private String secretKey;
+    protected BigDecimal minimumBalance = new BigDecimal("250");
+    protected BigDecimal monthlyMaintenanceFee = new BigDecimal("12");
 
     /*
     public Checking(Money balance, User primaryOwner, User secondaryOwner) {
@@ -33,4 +33,15 @@ public class Checking extends Account {
     public BigDecimal getMonthlyMaintenanceFee() {
         return monthlyMaintenanceFee;
     }
+
+    /*
+    public String getSecretKey() {
+        return secretKey;
+    }
+
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
+    }
+
+     */
 }
