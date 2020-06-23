@@ -6,9 +6,8 @@ import java.util.Set;
 
 @MappedSuperclass
 public class User {
-
     @Id
-    @GeneratedValue(strategy= GenerationType.TABLE)
+    @GeneratedValue(strategy= GenerationType.AUTO)
     private Long id;
     private String username;
     private String name;
