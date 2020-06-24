@@ -18,13 +18,13 @@ public class CreditCardService {
 
     @Secured({"ROLE_ADMIN"})
     public CreditCard create(AccountDTO accountDTO) {
-        // check for possible validation on fields
+        // check for possible validation on fields ¿maybe can be instantiated with a balance > 0?
         AccountHolder primaryOwner = null;
         AccountHolder secondaryOwner = null;
         CreditCard creditCard = null;
         if (accountDTO.getPrimaryOwner().getId() != null) {
             primaryOwner = accountHolderService.findById(accountDTO.getPrimaryOwner().getId());
-            creditCard = new CreditCard(new Money(accountDTO.getBalance()), primaryOwner);
+            creditCard = new CreditCard(primaryOwner);
         } else {
             // create new accountHolder
             /*
@@ -33,7 +33,7 @@ public class CreditCardService {
             primaryOwner = accountHolderRepository.save(primaryOwner);
              */
             primaryOwner = accountHolderService.create(accountDTO.getPrimaryOwner());
-            creditCard = new CreditCard(new Money(accountDTO.getBalance()), primaryOwner);
+            creditCard = new CreditCard(primaryOwner);
         }
         if (accountDTO.getSecondaryOwner() != null) {
             if (accountDTO.getSecondaryOwner().getId() != null) {
