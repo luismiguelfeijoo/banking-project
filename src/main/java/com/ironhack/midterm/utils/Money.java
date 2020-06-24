@@ -60,6 +60,16 @@ public class Money {
         return this.amount;
     }
 
+    public BigDecimal increaseByRate(BigDecimal rate) {
+        setAmount(this.amount.add(this.amount.multiply(rate).setScale(2, Money.DEFAULT_ROUNDING)));
+        return this.amount;
+    }
+
+    public BigDecimal decreaseByRate(BigDecimal rate) {
+        setAmount(this.amount.subtract(this.amount.multiply(rate).setScale(2, Money.DEFAULT_ROUNDING)));
+        return this.amount;
+    }
+
     public Currency getCurrency() {
         return this.currency;
     }

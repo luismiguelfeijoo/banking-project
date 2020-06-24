@@ -7,6 +7,7 @@ import javax.persistence.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -38,6 +39,7 @@ public abstract class Account {
     private List<Transaction> creditTransactions;
 
     private AccountStatus status = AccountStatus.ACTIVE;
+    private Date lastInterestApplyDate;
 
     public Account() {
     }
@@ -61,6 +63,7 @@ public abstract class Account {
         this.balance = balance;
         this.primaryOwner = primaryOwner;
         this.secondaryOwner = null;
+        this.lastInterestApplyDate = new Date();
     }
 
     public Long getId() {
@@ -107,6 +110,13 @@ public abstract class Account {
         this.status = status;
     }
 
+    public Date getLastInterestApplyDate() {
+        return lastInterestApplyDate;
+    }
+
+    public void setLastInterestApplyDate(Date lastInterestApplyDate) {
+        this.lastInterestApplyDate = lastInterestApplyDate;
+    }
 
     /*
     public List<Transaction> getDebitTransactions() {

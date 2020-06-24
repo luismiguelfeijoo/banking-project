@@ -12,7 +12,14 @@ public class DateDifference {
         LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         LocalDate now = LocalDate.now();
         Period period = Period.between(localDate, now);
-        System.out.println(period.getYears());
+        //System.out.println(period.getYears());
         return period.getYears();
+    }
+
+    public static int monthDifference(Date date) {
+        LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate now = LocalDate.now();
+        Period period = Period.between(localDate, now);
+        return period.getMonths();
     }
 }

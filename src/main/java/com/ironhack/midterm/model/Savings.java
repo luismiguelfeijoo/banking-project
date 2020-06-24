@@ -1,10 +1,13 @@
 package com.ironhack.midterm.model;
 
+import com.ironhack.midterm.utils.DateDifference;
 import com.ironhack.midterm.utils.Money;
 
 import javax.persistence.Entity;
 import javax.validation.constraints.DecimalMax;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Date;
 
 @Entity
 public class Savings extends Checking {
@@ -46,6 +49,14 @@ public class Savings extends Checking {
 
     public void setInterestRate(BigDecimal interestRate)  {
         this.interestRate = interestRate;
+    }
+
+    public void applyInterestRate() {
+        int years = DateDifference.yearDifference(getLastInterestApplyDate());
+        if (years >= 1) {
+            getBalance().increaseByRate(BigDecimal.valueOf(years).multiply(getInterestRate()).setScale(2, RoundingMode.HALF_EVEN));
+            setLastInterestApplyDate(new Date());
+        }
     }
 
 }

@@ -47,8 +47,7 @@ public class Checking extends Account {
     @Override
     public void creditAccount(Money amount) {
         if (this.getBalance().getAmount().compareTo(amount.getAmount()) > 0) {
-            BigDecimal newAmount = this.getBalance().decreaseAmount(amount);
-            setBalance(new Money(newAmount));
+            getBalance().decreaseAmount(amount);
         } else {
             throw new NoEnoughBalanceException("There's not enough funds to do this transaction");
         }
@@ -56,8 +55,13 @@ public class Checking extends Account {
 
     @Override
     public void debitAccount(Money amount) {
-        BigDecimal newAmount = this.getBalance().increaseAmount(amount);
-        setBalance(new Money(newAmount));
+        getBalance().increaseAmount(amount);
+    }
+
+    public void applyPenaltyFee() {
+        if (getBalance().getAmount().compareTo(getMinimumBalance()) < 0) {
+            getBalance().decreaseAmount(getPenaltyFee());
+        }
     }
 
     /*
