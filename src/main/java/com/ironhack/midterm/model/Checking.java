@@ -1,15 +1,16 @@
 package com.ironhack.midterm.model;
 
+import com.ironhack.midterm.exceptions.NegativeAmountException;
 import com.ironhack.midterm.exceptions.NoEnoughBalanceException;
 import com.ironhack.midterm.utils.Hashing;
 import com.ironhack.midterm.utils.Money;
 
-import javax.crypto.SecretKey;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -45,7 +46,8 @@ public class Checking extends Account {
     }
 
     @Override
-    public void creditAccount(Money amount) {
+    public void creditAccount(@PositiveOrZero Money amount) {
+        if (amount.getAmount().compareTo(BigDecimal.ZERO) < 0) throw new NegativeAmountException("The amount must be positive");
         if (this.getBalance().getAmount().compareTo(amount.getAmount()) > 0) {
             getBalance().decreaseAmount(amount);
         } else {
@@ -54,7 +56,8 @@ public class Checking extends Account {
     }
 
     @Override
-    public void debitAccount(Money amount) {
+    public void debitAccount(@PositiveOrZero Money amount) {
+        if (amount.getAmount().compareTo(BigDecimal.ZERO) < 0) throw new NegativeAmountException("The amount must be positive");
         getBalance().increaseAmount(amount);
     }
 

@@ -27,13 +27,13 @@ public class Money {
     /**
      * Class constructor specifying amount, and currency. Uses default RoundingMode HALF_EVEN.
      **/
-    public Money(@NotNull @Positive BigDecimal amount, Currency currency) {
+    public Money(@NotNull @PositiveOrZero BigDecimal amount, Currency currency) {
         this(amount, currency, DEFAULT_ROUNDING);
     }
     /**
      * Class constructor specifying amount. Uses default RoundingMode HALF_EVEN and default currency EUR.
      **/
-    public Money(@NotNull @Positive BigDecimal amount) {
+    public Money(@NotNull @PositiveOrZero BigDecimal amount) {
         this(amount, EUR, DEFAULT_ROUNDING);
     }
 
