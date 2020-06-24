@@ -7,6 +7,7 @@ import javax.persistence.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.util.List;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -29,6 +30,12 @@ public abstract class Account {
     @ManyToOne
     private AccountHolder secondaryOwner;
     private final BigDecimal penaltyFee = new BigDecimal("40");
+
+    @OneToMany(mappedBy = "debitedAccount")
+    private List<Transaction> debitTransactions;
+
+    @OneToMany(mappedBy = "creditedAccount")
+    private List<Transaction> creditTransactions;
 
     private AccountStatus status = AccountStatus.ACTIVE;
 
@@ -100,4 +107,19 @@ public abstract class Account {
         this.status = status;
     }
 
+    public List<Transaction> getDebitTransactions() {
+        return debitTransactions;
+    }
+
+    public void setDebitTransactions(List<Transaction> debitTransactions) {
+        this.debitTransactions = debitTransactions;
+    }
+
+    public List<Transaction> getCreditTransactions() {
+        return creditTransactions;
+    }
+
+    public void setCreditTransactions(List<Transaction> creditTransactions) {
+        this.creditTransactions = creditTransactions;
+    }
 }

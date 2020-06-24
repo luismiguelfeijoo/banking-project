@@ -36,9 +36,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     public void configure(HttpSecurity httpSecurity) throws Exception {
 
         httpSecurity.csrf().disable();
+        httpSecurity.logout()
+                .logoutUrl("/perform_logout")
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID");
         httpSecurity.httpBasic();
         httpSecurity.authorizeRequests()
-                .mvcMatchers("/admin").hasAuthority("ROLE_ADMIN")
+                .mvcMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
                 .anyRequest().permitAll();
 
     }

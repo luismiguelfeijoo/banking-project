@@ -9,9 +9,7 @@ import javax.validation.constraints.NotNull;
 
 @Entity
 public class ThirdParty extends User {
-    @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
-    private Long id;
+
     @NotNull
     private String hashedKey;
 
@@ -26,15 +24,6 @@ public class ThirdParty extends User {
     public String getHashedKey() {
         return hashedKey;
     }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
 
     /*
     setter not used

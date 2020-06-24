@@ -3,6 +3,7 @@ package com.ironhack.midterm.utils;
 import javax.persistence.Embeddable;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.math.RoundingMode;
 import java.math.BigDecimal;
 import java.util.Currency;
@@ -14,12 +15,11 @@ public class Money {
     private static final RoundingMode DEFAULT_ROUNDING = RoundingMode.HALF_EVEN;
     private Currency currency;
     @NotNull
-    @Positive
     private BigDecimal amount;
     /**
      * Class constructor specifying amount, currency, and rounding
      **/
-    public Money(@NotNull @Positive BigDecimal amount, Currency currency, RoundingMode rounding) {
+    public Money(@NotNull @PositiveOrZero BigDecimal amount, Currency currency, RoundingMode rounding) {
         this.currency = currency;
         setAmount(amount.setScale(currency.getDefaultFractionDigits(), rounding));
     }

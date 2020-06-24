@@ -11,7 +11,6 @@ import java.math.BigDecimal;
 public class AccountDTO {
     @NotNull
     private AccountType accountType;
-    @NotNull
     @PositiveOrZero
     private BigDecimal balance;
     @NotNull
