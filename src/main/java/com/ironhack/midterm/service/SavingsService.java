@@ -1,10 +1,8 @@
 package com.ironhack.midterm.service;
 
 import com.ironhack.midterm.controller.dto.AccountDTO;
-import com.ironhack.midterm.exceptions.NoSuchAccountHolderException;
 import com.ironhack.midterm.model.AccountHolder;
 import com.ironhack.midterm.model.Savings;
-import com.ironhack.midterm.repository.AccountHolderRepository;
 import com.ironhack.midterm.repository.SavingsRepository;
 import com.ironhack.midterm.utils.Money;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +14,6 @@ public class SavingsService {
     @Autowired
     private SavingsRepository savingsRepository;
     @Autowired
-    private AccountHolderRepository accountHolderRepository;
-    @Autowired
     private AccountHolderService accountHolderService;
 
     @Secured({"ROLE_ADMIN"})
@@ -26,7 +22,7 @@ public class SavingsService {
         AccountHolder secondaryOwner = null;
         Savings savings = null;
         if (accountDTO.getPrimaryOwner().getId() != null) {
-            primaryOwner = accountHolderRepository.findById(accountDTO.getPrimaryOwner().getId()).orElseThrow(() -> new NoSuchAccountHolderException("There's no account holder with provided id"));
+            primaryOwner = accountHolderService.findById(accountDTO.getPrimaryOwner().getId());
             savings = new Savings(new Money(accountDTO.getBalance()), primaryOwner);
         } else {
             // create new accountHolder
@@ -40,7 +36,7 @@ public class SavingsService {
         }
         if (accountDTO.getSecondaryOwner() != null) {
             if (accountDTO.getSecondaryOwner().getId() != null) {
-                secondaryOwner = accountHolderRepository.findById(accountDTO.getSecondaryOwner().getId()).orElseThrow(() -> new NoSuchAccountHolderException("There's no account holder with provided id"));
+                secondaryOwner = accountHolderService.findById(accountDTO.getPrimaryOwner().getId());
                 savings.setSecondaryOwner(secondaryOwner);
             } else {
                 /*

@@ -18,8 +18,6 @@ public class StudentCheckingService {
     @Autowired
     private StudentCheckingRepository studentCheckingRepository;
     @Autowired
-    private AccountHolderRepository accountHolderRepository;
-    @Autowired
     private AccountHolderService accountHolderService;
 
     @Secured({"ROLE_ADMIN"})
@@ -28,7 +26,7 @@ public class StudentCheckingService {
         AccountHolder primaryOwner = null;
         AccountHolder secondaryOwner = null;
         if (accountDTO.getPrimaryOwner().getId() != null) {
-            primaryOwner = accountHolderRepository.findById(accountDTO.getPrimaryOwner().getId()).orElseThrow(() -> new NoSuchAccountHolderException("There's no account holder with provided id"));
+            primaryOwner = accountHolderService.findById(accountDTO.getPrimaryOwner().getId());
             studentChecking = new StudentChecking(new Money(accountDTO.getBalance()), primaryOwner);
         } else {
             // create new accountHolder
@@ -42,7 +40,7 @@ public class StudentCheckingService {
         }
         if (accountDTO.getSecondaryOwner() != null) {
             if (accountDTO.getSecondaryOwner().getId() != null) {
-                secondaryOwner = accountHolderRepository.findById(accountDTO.getSecondaryOwner().getId()).orElseThrow(() -> new NoSuchAccountHolderException("There's no account holder with provided id"));
+                secondaryOwner = accountHolderService.findById(accountDTO.getPrimaryOwner().getId());
                 studentChecking.setSecondaryOwner(secondaryOwner);
             } else {
                 /*

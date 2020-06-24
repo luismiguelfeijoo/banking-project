@@ -1,13 +1,9 @@
 package com.ironhack.midterm.service;
 
 import com.ironhack.midterm.controller.dto.AccountDTO;
-import com.ironhack.midterm.exceptions.NoSuchAccountHolderException;
 import com.ironhack.midterm.model.AccountHolder;
-import com.ironhack.midterm.model.Checking;
 import com.ironhack.midterm.model.CreditCard;
-import com.ironhack.midterm.repository.AccountHolderRepository;
 import com.ironhack.midterm.repository.CreditCardRepository;
-import com.ironhack.midterm.utils.DateDifference;
 import com.ironhack.midterm.utils.Money;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
@@ -18,8 +14,6 @@ public class CreditCardService {
     @Autowired
     private CreditCardRepository creditCardRepository;
     @Autowired
-    private AccountHolderRepository accountHolderRepository;
-    @Autowired
     private AccountHolderService accountHolderService;
 
     @Secured({"ROLE_ADMIN"})
@@ -29,7 +23,7 @@ public class CreditCardService {
         AccountHolder secondaryOwner = null;
         CreditCard creditCard = null;
         if (accountDTO.getPrimaryOwner().getId() != null) {
-            primaryOwner = accountHolderRepository.findById(accountDTO.getPrimaryOwner().getId()).orElseThrow(() -> new NoSuchAccountHolderException("There's no account holder with provided id"));
+            primaryOwner = accountHolderService.findById(accountDTO.getPrimaryOwner().getId());
             creditCard = new CreditCard(new Money(accountDTO.getBalance()), primaryOwner);
         } else {
             // create new accountHolder
@@ -43,7 +37,7 @@ public class CreditCardService {
         }
         if (accountDTO.getSecondaryOwner() != null) {
             if (accountDTO.getSecondaryOwner().getId() != null) {
-                secondaryOwner = accountHolderRepository.findById(accountDTO.getSecondaryOwner().getId()).orElseThrow(() -> new NoSuchAccountHolderException("There's no account holder with provided id"));
+                secondaryOwner = accountHolderService.findById(accountDTO.getPrimaryOwner().getId());
                 creditCard.setSecondaryOwner(secondaryOwner);
             } else {
                 /*

@@ -1,5 +1,6 @@
 package com.ironhack.midterm.service;
 
+import com.ironhack.midterm.exceptions.NoSuchAccountHolderException;
 import com.ironhack.midterm.model.AccountHolder;
 import com.ironhack.midterm.model.Role;
 import com.ironhack.midterm.repository.AccountHolderRepository;
@@ -28,5 +29,9 @@ public class AccountHolderService {
         AccountHolder result = accountHolderRepository.save(newAccountHolder);
         roleRepository.save(role);
         return result;
+    }
+
+    public AccountHolder findById(Long id) {
+        return accountHolderRepository.findById(id).orElseThrow(() -> new NoSuchAccountHolderException("There's no account holder with provided id"));
     }
 }

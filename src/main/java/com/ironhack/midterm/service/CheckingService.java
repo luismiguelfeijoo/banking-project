@@ -1,13 +1,9 @@
 package com.ironhack.midterm.service;
 
 import com.ironhack.midterm.controller.dto.AccountDTO;
-import com.ironhack.midterm.exceptions.NoSuchAccountHolderException;
 import com.ironhack.midterm.model.AccountHolder;
 import com.ironhack.midterm.model.Checking;
-import com.ironhack.midterm.model.StudentChecking;
-import com.ironhack.midterm.repository.AccountHolderRepository;
 import com.ironhack.midterm.repository.CheckingRepository;
-import com.ironhack.midterm.repository.StudentCheckingRepository;
 import com.ironhack.midterm.utils.DateDifference;
 import com.ironhack.midterm.utils.Money;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +17,6 @@ public class CheckingService {
     @Autowired
     private CheckingRepository checkingRepository;
     @Autowired
-    private AccountHolderRepository accountHolderRepository;
-    @Autowired
     private AccountHolderService accountHolderService;
     @Autowired
     private StudentCheckingService studentCheckingService;
@@ -34,7 +28,7 @@ public class CheckingService {
         AccountHolder secondaryOwner = null;
         Checking checking = null;
         if (accountDTO.getPrimaryOwner().getId() != null) {
-            primaryOwner = accountHolderRepository.findById(accountDTO.getPrimaryOwner().getId()).orElseThrow(() -> new NoSuchAccountHolderException("There's no account holder with provided id"));
+            primaryOwner = accountHolderService.findById(accountDTO.getPrimaryOwner().getId());
             if (DateDifference.yearDifference(primaryOwner.getDateOfBirth()) < 24) return studentCheckingService.create(accountDTO);
             checking = new Checking(new Money(accountDTO.getBalance()), primaryOwner);
         } else {
@@ -50,7 +44,7 @@ public class CheckingService {
         }
         if (accountDTO.getSecondaryOwner() != null) {
             if (accountDTO.getSecondaryOwner().getId() != null) {
-                secondaryOwner = accountHolderRepository.findById(accountDTO.getSecondaryOwner().getId()).orElseThrow(() -> new NoSuchAccountHolderException("There's no account holder with provided id"));
+                secondaryOwner = accountHolderService.findById(accountDTO.getPrimaryOwner().getId());
                 checking.setSecondaryOwner(secondaryOwner);
             } else {
                 /*
