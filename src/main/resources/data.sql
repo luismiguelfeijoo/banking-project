@@ -10,5 +10,5 @@ INSERT INTO role(id, role, user_id) VALUES
     (2, 'ROLE_ACCOUNTHOLDER', 1);
 
 INSERT INTO account_holder(id, date_of_birth, city, country, street, zip) VALUES
-    (2,DATE '1997-12-26', 'Madrid', 'España', 'Pedro Antonio', '28017');
+    (2,DATE '1992-12-26', 'Madrid', 'España', 'Pedro Antonio', '28017');
 

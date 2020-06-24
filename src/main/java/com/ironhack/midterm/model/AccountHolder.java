@@ -13,6 +13,7 @@ import java.util.Set;
 @Entity
 public class AccountHolder extends SecuredUser {
 
+    @NotNull
     private Date dateOfBirth;
     @Embedded
     private Address primaryAddress;

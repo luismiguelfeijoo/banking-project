@@ -8,9 +8,7 @@ import java.util.Set;
 
 @MappedSuperclass
 public class User {
-    @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
-    private Long id;
+
     @NotNull
     @NotEmpty
     private String username;
@@ -28,12 +26,6 @@ public class User {
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
-    public Long getId() {
-        return id;
-    }
-    public void setId(Long id) {
-        this.id = id;
-    }
     public String getUsername() {
         return username;
     }
