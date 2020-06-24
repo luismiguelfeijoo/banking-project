@@ -40,7 +40,7 @@ public class StudentCheckingService {
         }
         if (accountDTO.getSecondaryOwner() != null) {
             if (accountDTO.getSecondaryOwner().getId() != null) {
-                secondaryOwner = accountHolderService.findById(accountDTO.getPrimaryOwner().getId());
+                secondaryOwner = accountHolderService.findById(accountDTO.getSecondaryOwner().getId());
                 studentChecking.setSecondaryOwner(secondaryOwner);
             } else {
                 /*

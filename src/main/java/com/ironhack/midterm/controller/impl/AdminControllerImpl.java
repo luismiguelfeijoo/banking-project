@@ -10,10 +10,7 @@ import com.ironhack.midterm.utils.DateDifference;
 import org.joda.time.Years;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.time.Duration;
@@ -22,6 +19,7 @@ import java.time.Period;
 import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 @RestController
 public class AdminControllerImpl implements AdminController {
@@ -59,14 +57,14 @@ public class AdminControllerImpl implements AdminController {
     }
 
     @GetMapping("/admin/account-holders")
-    public AccountHolder getAccountHolders(@Valid @RequestBody AccountHolder accountHolder) {
-        return accountHolderService.create(accountHolder);
+    public List<AccountHolder> getAccountHolders() {
+        return accountHolderService.findAll();
     }
 
 
     @GetMapping("/admin/account-holders/{id}")
-    public AccountHolder getAccountHolder(@Valid @RequestBody AccountHolder accountHolder) {
-        return accountHolderService.create(accountHolder);
+    public AccountHolder getAccountHolder(@PathVariable(name = "id") Long id) {
+        return accountHolderService.findById(id);
     }
 
     @Override

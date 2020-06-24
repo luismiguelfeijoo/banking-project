@@ -44,7 +44,8 @@ public class CheckingService {
         }
         if (accountDTO.getSecondaryOwner() != null) {
             if (accountDTO.getSecondaryOwner().getId() != null) {
-                secondaryOwner = accountHolderService.findById(accountDTO.getPrimaryOwner().getId());
+                System.out.println("PRINTING ID");
+                secondaryOwner = accountHolderService.findById(accountDTO.getSecondaryOwner().getId());
                 checking.setSecondaryOwner(secondaryOwner);
             } else {
                 /*

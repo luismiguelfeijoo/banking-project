@@ -10,6 +10,8 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class AccountHolderService {
     @Autowired
@@ -33,5 +35,9 @@ public class AccountHolderService {
 
     public AccountHolder findById(Long id) {
         return accountHolderRepository.findById(id).orElseThrow(() -> new NoSuchAccountHolderException("There's no account holder with provided id"));
+    }
+
+    public List<AccountHolder> findAll() {
+        return accountHolderRepository.findAll();
     }
 }

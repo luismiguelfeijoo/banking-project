@@ -37,7 +37,7 @@ public class CreditCardService {
         }
         if (accountDTO.getSecondaryOwner() != null) {
             if (accountDTO.getSecondaryOwner().getId() != null) {
-                secondaryOwner = accountHolderService.findById(accountDTO.getPrimaryOwner().getId());
+                secondaryOwner = accountHolderService.findById(accountDTO.getSecondaryOwner().getId());
                 creditCard.setSecondaryOwner(secondaryOwner);
             } else {
                 /*

@@ -36,7 +36,7 @@ public class SavingsService {
         }
         if (accountDTO.getSecondaryOwner() != null) {
             if (accountDTO.getSecondaryOwner().getId() != null) {
-                secondaryOwner = accountHolderService.findById(accountDTO.getPrimaryOwner().getId());
+                secondaryOwner = accountHolderService.findById(accountDTO.getSecondaryOwner().getId());
                 savings.setSecondaryOwner(secondaryOwner);
             } else {
                 /*
