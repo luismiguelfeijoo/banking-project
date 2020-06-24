@@ -19,6 +19,8 @@ public class StudentCheckingService {
     private StudentCheckingRepository studentCheckingRepository;
     @Autowired
     private AccountHolderRepository accountHolderRepository;
+    @Autowired
+    private AccountHolderService accountHolderService;
 
     @Secured({"ROLE_ADMIN"})
     public StudentChecking create(AccountDTO accountDTO) {
@@ -30,9 +32,12 @@ public class StudentCheckingService {
             studentChecking = new StudentChecking(new Money(accountDTO.getBalance()), primaryOwner);
         } else {
             // create new accountHolder
+            /*
             primaryOwner = new AccountHolder(accountDTO.getPrimaryOwner().getUsername(), accountDTO.getPrimaryOwner().getName(), accountDTO.getPrimaryOwner().getPassword(), accountDTO.getPrimaryOwner().getDateOfBirth(), accountDTO.getPrimaryOwner().getPrimaryAddress());
             if (accountDTO.getPrimaryOwner().getMailingAddress() != null) primaryOwner.setMailingAddress(accountDTO.getPrimaryOwner().getMailingAddress());
             primaryOwner = accountHolderRepository.save(primaryOwner);
+             */
+            primaryOwner = accountHolderService.create(accountDTO.getPrimaryOwner());
             studentChecking = new StudentChecking(new Money(accountDTO.getBalance()), primaryOwner);
         }
         if (accountDTO.getSecondaryOwner() != null) {
@@ -40,9 +45,12 @@ public class StudentCheckingService {
                 secondaryOwner = accountHolderRepository.findById(accountDTO.getSecondaryOwner().getId()).orElseThrow(() -> new NoSuchAccountHolderException("There's no account holder with provided id"));
                 studentChecking.setSecondaryOwner(secondaryOwner);
             } else {
+                /*
                 secondaryOwner = new AccountHolder(accountDTO.getSecondaryOwner().getUsername(), accountDTO.getSecondaryOwner().getName(), accountDTO.getSecondaryOwner().getPassword(), accountDTO.getSecondaryOwner().getDateOfBirth(), accountDTO.getSecondaryOwner().getPrimaryAddress());
                 if (accountDTO.getSecondaryOwner().getMailingAddress() != null) secondaryOwner.setMailingAddress(accountDTO.getSecondaryOwner().getMailingAddress());
                 secondaryOwner = accountHolderRepository.save(secondaryOwner);
+                 */
+                secondaryOwner = accountHolderService.create(accountDTO.getSecondaryOwner());
                 studentChecking.setSecondaryOwner(secondaryOwner);
             }
         }

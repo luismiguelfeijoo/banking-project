@@ -19,6 +19,8 @@ public class CreditCardService {
     private CreditCardRepository creditCardRepository;
     @Autowired
     private AccountHolderRepository accountHolderRepository;
+    @Autowired
+    private AccountHolderService accountHolderService;
 
     @Secured({"ROLE_ADMIN"})
     public CreditCard create(AccountDTO accountDTO) {
@@ -31,9 +33,12 @@ public class CreditCardService {
             creditCard = new CreditCard(new Money(accountDTO.getBalance()), primaryOwner);
         } else {
             // create new accountHolder
+            /*
             primaryOwner = new AccountHolder(accountDTO.getPrimaryOwner().getUsername(), accountDTO.getPrimaryOwner().getName(), accountDTO.getPrimaryOwner().getPassword(), accountDTO.getPrimaryOwner().getDateOfBirth(), accountDTO.getPrimaryOwner().getPrimaryAddress());
             if (accountDTO.getPrimaryOwner().getMailingAddress() != null) primaryOwner.setMailingAddress(accountDTO.getPrimaryOwner().getMailingAddress());
             primaryOwner = accountHolderRepository.save(primaryOwner);
+             */
+            primaryOwner = accountHolderService.create(accountDTO.getPrimaryOwner());
             creditCard = new CreditCard(new Money(accountDTO.getBalance()), primaryOwner);
         }
         if (accountDTO.getSecondaryOwner() != null) {
@@ -41,9 +46,12 @@ public class CreditCardService {
                 secondaryOwner = accountHolderRepository.findById(accountDTO.getSecondaryOwner().getId()).orElseThrow(() -> new NoSuchAccountHolderException("There's no account holder with provided id"));
                 creditCard.setSecondaryOwner(secondaryOwner);
             } else {
+                /*
                 secondaryOwner = new AccountHolder(accountDTO.getSecondaryOwner().getUsername(), accountDTO.getSecondaryOwner().getName(), accountDTO.getSecondaryOwner().getPassword(), accountDTO.getSecondaryOwner().getDateOfBirth(), accountDTO.getSecondaryOwner().getPrimaryAddress());
                 if (accountDTO.getSecondaryOwner().getMailingAddress() != null) secondaryOwner.setMailingAddress(accountDTO.getSecondaryOwner().getMailingAddress());
                 secondaryOwner = accountHolderRepository.save(secondaryOwner);
+                 */
+                secondaryOwner = accountHolderService.create(accountDTO.getSecondaryOwner());
                 creditCard.setSecondaryOwner(secondaryOwner);
             }
         }

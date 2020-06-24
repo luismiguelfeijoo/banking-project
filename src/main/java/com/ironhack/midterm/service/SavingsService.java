@@ -17,6 +17,8 @@ public class SavingsService {
     private SavingsRepository savingsRepository;
     @Autowired
     private AccountHolderRepository accountHolderRepository;
+    @Autowired
+    private AccountHolderService accountHolderService;
 
     @Secured({"ROLE_ADMIN"})
     public Savings create(AccountDTO accountDTO) {
@@ -28,9 +30,12 @@ public class SavingsService {
             savings = new Savings(new Money(accountDTO.getBalance()), primaryOwner);
         } else {
             // create new accountHolder
+            /*
             primaryOwner = new AccountHolder(accountDTO.getPrimaryOwner().getUsername(), accountDTO.getPrimaryOwner().getName(), accountDTO.getPrimaryOwner().getPassword(), accountDTO.getPrimaryOwner().getDateOfBirth(), accountDTO.getPrimaryOwner().getPrimaryAddress());
             if (accountDTO.getPrimaryOwner().getMailingAddress() != null) primaryOwner.setMailingAddress(accountDTO.getPrimaryOwner().getMailingAddress());
             primaryOwner = accountHolderRepository.save(primaryOwner);
+             */
+            primaryOwner = accountHolderService.create(accountDTO.getPrimaryOwner());
             savings = new Savings(new Money(accountDTO.getBalance()), primaryOwner);
         }
         if (accountDTO.getSecondaryOwner() != null) {
@@ -38,9 +43,12 @@ public class SavingsService {
                 secondaryOwner = accountHolderRepository.findById(accountDTO.getSecondaryOwner().getId()).orElseThrow(() -> new NoSuchAccountHolderException("There's no account holder with provided id"));
                 savings.setSecondaryOwner(secondaryOwner);
             } else {
+                /*
                 secondaryOwner = new AccountHolder(accountDTO.getSecondaryOwner().getUsername(), accountDTO.getSecondaryOwner().getName(), accountDTO.getSecondaryOwner().getPassword(), accountDTO.getSecondaryOwner().getDateOfBirth(), accountDTO.getSecondaryOwner().getPrimaryAddress());
                 if (accountDTO.getSecondaryOwner().getMailingAddress() != null) secondaryOwner.setMailingAddress(accountDTO.getSecondaryOwner().getMailingAddress());
                 secondaryOwner = accountHolderRepository.save(secondaryOwner);
+                 */
+                secondaryOwner = accountHolderService.create(accountDTO.getSecondaryOwner());
                 savings.setSecondaryOwner(secondaryOwner);
             }
         }
