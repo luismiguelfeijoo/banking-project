@@ -44,18 +44,17 @@ public class AccountHolder extends SecuredUser {
     public AccountHolder() {
     }
 
-    public AccountHolder(@NotNull @NotEmpty String username, @NotNull @NotEmpty String name, String password, Date dateOfBirth, Address primaryAddress) {
+    public AccountHolder(@NotNull @NotEmpty String username, @NotNull @NotEmpty String name, @NotNull @NotEmpty String password, @NotNull Date dateOfBirth, Address primaryAddress) {
         super(username, name, password);
         this.dateOfBirth = dateOfBirth;
         this.primaryAddress = primaryAddress;
     }
 
-    public AccountHolder(String username, String name, Role role, String password, Date dateOfBirth, Address primaryAddress, Address mailingAddress, List<Account> primaryAccounts, List<Account> secondaryAccounts) {
+    public AccountHolder(@NotNull @NotEmpty String username, @NotNull @NotEmpty String name, @NotNull @NotEmpty String password, @NotNull Date dateOfBirth, Address primaryAddress, Address mailingAddress) {
+        super(username, name, password);
         this.dateOfBirth = dateOfBirth;
         this.primaryAddress = primaryAddress;
         this.mailingAddress = mailingAddress;
-        this.primaryAccounts = primaryAccounts;
-        this.secondaryAccounts = secondaryAccounts;
     }
 
     public Date getDateOfBirth() {

@@ -10,6 +10,7 @@ import com.ironhack.midterm.utils.DateDifference;
 import org.joda.time.Years;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,6 +28,8 @@ public class AdminControllerImpl implements AdminController {
     @Autowired
     private ThirdPartyService thirdPartyService;
     @Autowired
+    private AccountHolderService accountHolderService;
+    @Autowired
     private CheckingService checkingService;
     @Autowired
     private StudentCheckingService studentCheckingService;
@@ -43,14 +46,6 @@ public class AdminControllerImpl implements AdminController {
         // receive dto and create proper account
         switch (account.getAccountType()) {
             case CHECKING:
-                /*
-                if (DateDifference.yearDifference(account.getPrimaryOwner().getDateOfBirth()) > 24) {
-                    newAccount = checkingService.create(account);
-                } else {
-                    newAccount = studentCheckingService.create(account);
-                }
-
-                 */
                 newAccount = checkingService.create(account);
                 break;
             case SAVINGS:
@@ -63,9 +58,21 @@ public class AdminControllerImpl implements AdminController {
         return newAccount;
     }
 
+    @GetMapping("/admin/account-holders")
+    public AccountHolder getAccountHolders(@Valid @RequestBody AccountHolder accountHolder) {
+        return accountHolderService.create(accountHolder);
+    }
+
+
+    @GetMapping("/admin/account-holders/{id}")
+    public AccountHolder getAccountHolder(@Valid @RequestBody AccountHolder accountHolder) {
+        return accountHolderService.create(accountHolder);
+    }
+
     @Override
-    public AccountHolder createAccountHolder() {
-        return null;
+    @PostMapping("/admin/account-holder")
+    public AccountHolder createAccountHolder(@Valid @RequestBody AccountHolder accountHolder) {
+        return accountHolderService.create(accountHolder);
     }
 
     @Override

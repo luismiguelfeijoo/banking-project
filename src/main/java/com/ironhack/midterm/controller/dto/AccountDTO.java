@@ -3,6 +3,7 @@ package com.ironhack.midterm.controller.dto;
 import com.ironhack.midterm.enums.AccountType;
 import com.ironhack.midterm.model.AccountHolder;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
@@ -20,7 +21,7 @@ public class AccountDTO {
     private BigDecimal creditLimit;
     private BigDecimal interestRate;
 
-    public AccountDTO(@NotNull AccountType accountType, @NotNull @PositiveOrZero BigDecimal balance, @NotNull AccountHolder primaryOwner) {
+    public AccountDTO(@NotNull AccountType accountType, @NotNull @PositiveOrZero BigDecimal balance, @Valid @NotNull AccountHolder primaryOwner) {
         this.accountType = accountType;
         this.balance = balance;
         this.primaryOwner = primaryOwner;

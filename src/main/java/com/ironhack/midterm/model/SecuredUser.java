@@ -1,5 +1,7 @@
 package com.ironhack.midterm.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -12,15 +14,18 @@ public class SecuredUser extends User {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
+    @NotNull
+    @NotEmpty
     private String password;
 
     @ManyToMany(fetch= FetchType.EAGER, cascade= CascadeType.ALL, mappedBy="user")
+    @JsonIgnore
     private Set<Role> roles = new HashSet<>();
 
     public SecuredUser() {
     }
 
-    public SecuredUser(@NotNull @NotEmpty String username, @NotNull @NotEmpty String name, String password) {
+    public SecuredUser(@NotNull @NotEmpty String username, @NotNull @NotEmpty String name, @NotNull @NotEmpty String password) {
         super(username, name);
         this.password = password;
     }
