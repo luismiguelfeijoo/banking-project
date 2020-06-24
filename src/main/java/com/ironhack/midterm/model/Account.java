@@ -129,5 +129,5 @@ public abstract class Account {
     public abstract void creditAccount(Money amount);
 
     public abstract void debitAccount(Money amount);
-    
+
 }

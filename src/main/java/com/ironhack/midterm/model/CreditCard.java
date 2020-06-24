@@ -51,7 +51,7 @@ public class CreditCard extends Account {
             BigDecimal newAmount = this.getBalance().increaseAmount(amount);
             setBalance(new Money(newAmount));
         } else {
-            throw new NoEnoughBalanceException("There's not enough funds to do this transaction");
+            throw new NoEnoughBalanceException("There's not enough credit limit to do the transaction");
         }
     }
 
