@@ -1,5 +1,6 @@
 package com.ironhack.midterm.model;
 
+import com.ironhack.midterm.exceptions.NoEnoughBalanceException;
 import com.ironhack.midterm.utils.Money;
 
 import javax.persistence.Entity;
@@ -42,5 +43,22 @@ public class CreditCard extends Account {
 
     public void setInterestRate(BigDecimal interestRate) {
         this.interestRate = interestRate;
+    }
+
+    @Override
+    public void creditAccount(Money amount) {
+        if (this.getCreditLimit().compareTo(amount.getAmount().add(getBalance().getAmount())) >= 0) {
+            BigDecimal newAmount = this.getBalance().increaseAmount(amount);
+            setBalance(new Money(newAmount));
+        } else {
+            throw new NoEnoughBalanceException("There's not enough funds to do this transaction");
+        }
+    }
+
+    @Override
+    public void debitAccount(Money amount) {
+        // check if balance is negative ?
+        BigDecimal newAmount = this.getBalance().decreaseAmount(amount);
+        setBalance(new Money(newAmount));
     }
 }

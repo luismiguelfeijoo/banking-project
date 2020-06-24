@@ -107,6 +107,8 @@ public abstract class Account {
         this.status = status;
     }
 
+
+    /*
     public List<Transaction> getDebitTransactions() {
         return debitTransactions;
     }
@@ -122,4 +124,10 @@ public abstract class Account {
     public void setCreditTransactions(List<Transaction> creditTransactions) {
         this.creditTransactions = creditTransactions;
     }
+     */
+
+    public abstract void creditAccount(Money amount);
+
+    public abstract void debitAccount(Money amount);
+    
 }

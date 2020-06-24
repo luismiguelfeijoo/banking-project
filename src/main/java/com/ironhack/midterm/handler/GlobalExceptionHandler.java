@@ -1,5 +1,6 @@
 package com.ironhack.midterm.handler;
 
+import com.ironhack.midterm.exceptions.NoEnoughBalanceException;
 import com.ironhack.midterm.exceptions.NoSuchAccountHolderException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -12,5 +13,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoSuchAccountHolderException.class)
     public void noSuchAccountHolderExceptionHandler(NoSuchAccountHolderException noSuchAccountHolderException, HttpServletResponse response) throws IOException {
         response.sendError(HttpServletResponse.SC_NOT_FOUND, noSuchAccountHolderException.getMessage());
+    }
+
+    @ExceptionHandler(NoEnoughBalanceException.class)
+    public void noEnoughBalanceExceptionHandler(NoEnoughBalanceException noEnoughBalanceException, HttpServletResponse response) throws IOException {
+        response.sendError(HttpServletResponse.SC_CONFLICT, noEnoughBalanceException.getMessage());
     }
 }

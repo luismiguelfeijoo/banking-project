@@ -11,6 +11,7 @@ import java.util.Currency;
 @Embeddable
 public class Money {
     //private static final Currency USD = Currency.getInstance("USD");
+    // For simplicity I use only EUR
     private static final Currency EUR = Currency.getInstance("EUR");
     private static final RoundingMode DEFAULT_ROUNDING = RoundingMode.HALF_EVEN;
     private Currency currency;

@@ -1,5 +1,6 @@
 package com.ironhack.midterm.model;
 
+import com.ironhack.midterm.exceptions.NoEnoughBalanceException;
 import com.ironhack.midterm.utils.Hashing;
 import com.ironhack.midterm.utils.Money;
 
@@ -41,6 +42,22 @@ public class Checking extends Account {
 
     public BigDecimal getMonthlyMaintenanceFee() {
         return monthlyMaintenanceFee;
+    }
+
+    @Override
+    public void creditAccount(Money amount) {
+        if (this.getBalance().getAmount().compareTo(amount.getAmount()) > 0) {
+            BigDecimal newAmount = this.getBalance().decreaseAmount(amount);
+            setBalance(new Money(newAmount));
+        } else {
+            throw new NoEnoughBalanceException("There's not enough funds to do this transaction");
+        }
+    }
+
+    @Override
+    public void debitAccount(Money amount) {
+        BigDecimal newAmount = this.getBalance().increaseAmount(amount);
+        setBalance(new Money(newAmount));
     }
 
     /*
