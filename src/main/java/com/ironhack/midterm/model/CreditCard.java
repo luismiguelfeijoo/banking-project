@@ -71,7 +71,6 @@ public class CreditCard extends Account {
 
     public void applyInterestRate() {
         int months = DateDifference.monthDifference(getLastInterestApplyDate());
-        System.out.println(months);
         while (months >= 1) {
             getBalance().increaseByRate(BigDecimal.ONE.multiply(getInterestRate().divide(new BigDecimal("12"), 4, RoundingMode.HALF_EVEN)));
             Calendar calendar = Calendar.getInstance();
@@ -79,8 +78,6 @@ public class CreditCard extends Account {
             calendar.add(Calendar.MONTH, 1);
             setLastInterestApplyDate(calendar.getTime());
             months--;
-            System.out.println(getBalance());
-            System.out.println(getLastInterestApplyDate());
         }
     }
 }

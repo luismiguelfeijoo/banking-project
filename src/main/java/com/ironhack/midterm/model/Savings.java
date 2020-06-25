@@ -54,7 +54,6 @@ public class Savings extends Checking {
 
     public void applyInterestRate() {
         int years = DateDifference.yearDifference(getLastInterestApplyDate());
-        System.out.println(years);
         while (years >= 1) {
             getBalance().increaseByRate(BigDecimal.ONE.multiply(getInterestRate()).setScale(4, RoundingMode.HALF_EVEN));
             Calendar calendar = Calendar.getInstance();
@@ -62,8 +61,6 @@ public class Savings extends Checking {
             calendar.add(Calendar.YEAR, 1);
             setLastInterestApplyDate(calendar.getTime());
             years--;
-            System.out.println(getBalance());
-            System.out.println(getLastInterestApplyDate());
         }
     }
 
