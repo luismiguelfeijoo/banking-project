@@ -49,8 +49,8 @@ public class CreditCardService {
                 creditCard.setSecondaryOwner(secondaryOwner);
             }
         }
-        if (accountDTO.getInterestRate() != null) creditCard.setInterestRate(accountDTO.getInterestRate());
-        if (accountDTO.getCreditLimit() != null) creditCard.setCreditLimit(accountDTO.getCreditLimit());
+        //if (accountDTO.getInterestRate() != null) creditCard.setInterestRate(accountDTO.getInterestRate());
+        //if (accountDTO.getCreditLimit() != null) creditCard.setCreditLimit(accountDTO.getCreditLimit());
         return creditCardRepository.save(creditCard);
     }
 }

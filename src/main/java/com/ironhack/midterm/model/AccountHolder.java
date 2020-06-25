@@ -50,28 +50,26 @@ public class AccountHolder extends SecuredUser {
         this.primaryAddress = primaryAddress;
     }
 
-    public AccountHolder(@NotNull @NotEmpty String username, @NotNull @NotEmpty String name, @NotNull @NotEmpty String password, @NotNull Date dateOfBirth, Address primaryAddress, Address mailingAddress) {
-        super(username, name, password);
-        this.dateOfBirth = dateOfBirth;
-        this.primaryAddress = primaryAddress;
-        this.mailingAddress = mailingAddress;
-    }
 
     public Date getDateOfBirth() {
         return dateOfBirth;
     }
 
+    /*
     public void setDateOfBirth(Date dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
+     */
 
     public Address getPrimaryAddress() {
         return primaryAddress;
     }
 
+    /*
     public void setPrimaryAddress(Address primaryAddress) {
         this.primaryAddress = primaryAddress;
     }
+     */
 
     public Address getMailingAddress() {
         return mailingAddress;
@@ -81,6 +79,7 @@ public class AccountHolder extends SecuredUser {
         this.mailingAddress = mailingAddress;
     }
 
+    /*
     public List<Account> getPrimaryAccounts() {
         return primaryAccounts;
     }
@@ -96,6 +95,7 @@ public class AccountHolder extends SecuredUser {
     public void setSecondaryAccounts(List<Account> secondaryAccounts) {
         this.secondaryAccounts = secondaryAccounts;
     }
+     */
 
 
 }

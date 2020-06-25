@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.validation.constraints.DecimalMax;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Calendar;
 import java.util.Date;
 
 @Entity
@@ -53,9 +54,13 @@ public class Savings extends Checking {
 
     public void applyInterestRate() {
         int years = DateDifference.yearDifference(getLastInterestApplyDate());
-        if (years >= 1) {
-            getBalance().increaseByRate(BigDecimal.valueOf(years).multiply(getInterestRate()).setScale(2, RoundingMode.HALF_EVEN));
-            setLastInterestApplyDate(new Date());
+        while (years >= 1) {
+            getBalance().increaseByRate(BigDecimal.ONE.multiply(getInterestRate()).setScale(2, RoundingMode.HALF_EVEN));
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(getLastInterestApplyDate());
+            calendar.add(Calendar.YEAR, 1);
+            setLastInterestApplyDate(calendar.getTime());
+            years--;
         }
     }
 
