@@ -1,8 +1,11 @@
 package com.ironhack.midterm.service;
 
 import com.ironhack.midterm.controller.dto.AccountDTO;
+import com.ironhack.midterm.exceptions.NoSuchCheckingAccountException;
+import com.ironhack.midterm.exceptions.NoSuchStudentCheckingAccountException;
 import com.ironhack.midterm.model.AccountHolder;
 import com.ironhack.midterm.model.Checking;
+import com.ironhack.midterm.model.StudentChecking;
 import com.ironhack.midterm.repository.CheckingRepository;
 import com.ironhack.midterm.utils.DateDifference;
 import com.ironhack.midterm.utils.Money;
@@ -58,5 +61,9 @@ public class CheckingService {
             }
         }
         return checkingRepository.save(checking);
+    }
+
+    public Checking findById(Long id) {
+        return checkingRepository.findById(id).orElseThrow(() -> new NoSuchCheckingAccountException("There's no checking account with the provided ID"));
     }
 }

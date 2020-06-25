@@ -1,6 +1,7 @@
 package com.ironhack.midterm.service;
 
 import com.ironhack.midterm.controller.dto.AccountDTO;
+import com.ironhack.midterm.exceptions.NoSuchCreditCardException;
 import com.ironhack.midterm.model.AccountHolder;
 import com.ironhack.midterm.model.CreditCard;
 import com.ironhack.midterm.repository.CreditCardRepository;
@@ -52,5 +53,9 @@ public class CreditCardService {
         //if (accountDTO.getInterestRate() != null) creditCard.setInterestRate(accountDTO.getInterestRate());
         //if (accountDTO.getCreditLimit() != null) creditCard.setCreditLimit(accountDTO.getCreditLimit());
         return creditCardRepository.save(creditCard);
+    }
+
+    public CreditCard findById(Long id) {
+        return creditCardRepository.findById(id).orElseThrow(() -> new NoSuchCreditCardException("There's no credit card with the provided ID"));
     }
 }

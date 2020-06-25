@@ -9,6 +9,7 @@ import javax.persistence.Entity;
 import javax.validation.constraints.DecimalMax;
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.Max;
+import javax.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Calendar;
@@ -25,7 +26,10 @@ public class CreditCard extends Account {
     private BigDecimal interestRate = new BigDecimal("0.2");
 
 
-    public CreditCard(AccountHolder primaryOwner,  @DecimalMax(value = "100000") @DecimalMin(value = "100") BigDecimal creditLimit, @DecimalMin(value = "0.1") @DecimalMax(value = "0.2") BigDecimal interestRate) {
+    public CreditCard() {
+    }
+
+    public CreditCard(AccountHolder primaryOwner, @DecimalMax(value = "100000") @DecimalMin(value = "100") BigDecimal creditLimit, @DecimalMin(value = "0.1") @DecimalMax(value = "0.2") BigDecimal interestRate) {
         super(new Money(new BigDecimal("0")), primaryOwner);
         this.creditLimit = creditLimit;
         this.interestRate = interestRate;
@@ -53,7 +57,7 @@ public class CreditCard extends Account {
     }
 
     @Override
-    public void creditAccount(Money amount) {
+    public void creditAccount(@PositiveOrZero Money amount) {
         if (amount.getAmount().compareTo(BigDecimal.ZERO) < 0) throw new NegativeAmountException("The amount must be positive");
         if (this.getCreditLimit().compareTo(amount.getAmount().add(getBalance().getAmount())) >= 0) {
             getBalance().increaseAmount(amount);
@@ -63,7 +67,7 @@ public class CreditCard extends Account {
     }
 
     @Override
-    public void debitAccount(Money amount) {
+    public void debitAccount(@PositiveOrZero Money amount) {
         // check if balance is negative ?
         if (amount.getAmount().compareTo(BigDecimal.ZERO) < 0) throw new NegativeAmountException("The amount must be positive");
         this.getBalance().decreaseAmount(amount);

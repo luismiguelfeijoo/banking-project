@@ -6,6 +6,7 @@ import com.ironhack.midterm.utils.Money;
 import javax.persistence.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -136,8 +137,8 @@ public abstract class Account {
     }
      */
 
-    public abstract void creditAccount(Money amount);
+    public abstract void creditAccount(@PositiveOrZero Money amount);
 
-    public abstract void debitAccount(Money amount);
+    public abstract void debitAccount (@PositiveOrZero Money amount);
 
 }

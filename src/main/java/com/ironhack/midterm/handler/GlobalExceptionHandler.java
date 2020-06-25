@@ -1,8 +1,6 @@
 package com.ironhack.midterm.handler;
 
-import com.ironhack.midterm.exceptions.NegativeAmountException;
-import com.ironhack.midterm.exceptions.NoEnoughBalanceException;
-import com.ironhack.midterm.exceptions.NoSuchAccountHolderException;
+import com.ironhack.midterm.exceptions.*;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -24,5 +22,35 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NegativeAmountException.class)
     public void negativeAmountExceptionHandler(NegativeAmountException negativeAmountException, HttpServletResponse response) throws IOException {
         response.sendError(HttpServletResponse.SC_CONFLICT, negativeAmountException.getMessage());
+    }
+
+    @ExceptionHandler(NoSuchAccountException.class)
+    public void noSuchAccountExceptionHandler(NoSuchAccountException noSuchAccountException, HttpServletResponse response) throws IOException {
+        response.sendError(HttpServletResponse.SC_NOT_FOUND, noSuchAccountException.getMessage());
+    }
+
+    @ExceptionHandler(NoSuchCheckingAccountException.class)
+    public void noSuchCheckingAccountExceptionHandler(NoSuchCheckingAccountException noSuchCheckingAccountException, HttpServletResponse response) throws IOException {
+        response.sendError(HttpServletResponse.SC_NOT_FOUND, noSuchCheckingAccountException.getMessage());
+    }
+
+    @ExceptionHandler(NoSuchCreditCardException.class)
+    public void noSuchCreditCardExceptionHandler(NoSuchCreditCardException noSuchCreditCardException, HttpServletResponse response) throws IOException {
+        response.sendError(HttpServletResponse.SC_NOT_FOUND, noSuchCreditCardException.getMessage());
+    }
+
+    @ExceptionHandler(NoSuchSavingsAccountException.class)
+    public void noSuchSavingsAccountExceptionHandler(NoSuchSavingsAccountException noSuchSavingsAccountException, HttpServletResponse response) throws IOException {
+        response.sendError(HttpServletResponse.SC_NOT_FOUND, noSuchSavingsAccountException.getMessage());
+    }
+
+    @ExceptionHandler(NoSuchStudentCheckingAccountException.class)
+    public void noSuchStudentCheckingAccountExceptionHandler(NoSuchStudentCheckingAccountException noSuchStudentCheckingAccountException, HttpServletResponse response) throws IOException {
+        response.sendError(HttpServletResponse.SC_NOT_FOUND, noSuchStudentCheckingAccountException.getMessage());
+    }
+
+    @ExceptionHandler(NoPermissionForUserException.class)
+    public void noPermissionForUserExceptionHandler(NoPermissionForUserException noPermissionForUserException, HttpServletResponse response) throws IOException {
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, noPermissionForUserException.getMessage());
     }
 }

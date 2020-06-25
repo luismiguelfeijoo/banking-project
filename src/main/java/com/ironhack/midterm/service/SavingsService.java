@@ -1,7 +1,10 @@
 package com.ironhack.midterm.service;
 
 import com.ironhack.midterm.controller.dto.AccountDTO;
+import com.ironhack.midterm.exceptions.NoSuchCreditCardException;
+import com.ironhack.midterm.exceptions.NoSuchSavingsAccountException;
 import com.ironhack.midterm.model.AccountHolder;
+import com.ironhack.midterm.model.CreditCard;
 import com.ironhack.midterm.model.Savings;
 import com.ironhack.midterm.repository.SavingsRepository;
 import com.ironhack.midterm.utils.Money;
@@ -51,5 +54,9 @@ public class SavingsService {
         if (accountDTO.getSecondaryOwner() != null) savings.setSecondaryOwner(accountDTO.getSecondaryOwner());
         if (accountDTO.getInterestRate() != null) savings.setInterestRate(accountDTO.getInterestRate());
         return savingsRepository.save(savings);
+    }
+
+    public Savings findById(Long id) {
+        return savingsRepository.findById(id).orElseThrow(() -> new NoSuchSavingsAccountException("There's no savings account with the provided ID"));
     }
 }
