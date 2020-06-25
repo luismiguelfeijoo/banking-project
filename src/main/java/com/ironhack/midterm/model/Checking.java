@@ -19,8 +19,10 @@ import java.util.Date;
 public class Checking extends Account {
     @NotNull
     private String secretKey;
+    private boolean penaltyCharged = false;
     protected BigDecimal minimumBalance = new BigDecimal("250");
     protected BigDecimal monthlyMaintenanceFee = new BigDecimal("12");
+
 
     /*
     public Checking(Money balance, User primaryOwner, User secondaryOwner) {
@@ -48,7 +50,7 @@ public class Checking extends Account {
     @Override
     public void creditAccount(@PositiveOrZero Money amount) {
         if (amount.getAmount().compareTo(BigDecimal.ZERO) < 0) throw new NegativeAmountException("The amount must be positive");
-        if (this.getBalance().getAmount().compareTo(amount.getAmount()) > 0) {
+        if (this.getBalance().getAmount().compareTo(amount.getAmount()) >= 0) {
             getBalance().decreaseAmount(amount);
         } else {
             throw new NoEnoughBalanceException("There's not enough funds to do this transaction");
@@ -59,11 +61,13 @@ public class Checking extends Account {
     public void debitAccount(@PositiveOrZero Money amount) {
         if (amount.getAmount().compareTo(BigDecimal.ZERO) < 0) throw new NegativeAmountException("The amount must be positive");
         getBalance().increaseAmount(amount);
+        if (penaltyCharged && getBalance().getAmount().compareTo(getMinimumBalance()) >= 0) penaltyCharged = false;
     }
 
     public void applyPenaltyFee() {
-        if (getBalance().getAmount().compareTo(getMinimumBalance()) < 0) {
+        if (!penaltyCharged && getBalance().getAmount().compareTo(getMinimumBalance()) < 0) {
             getBalance().decreaseAmount(getPenaltyFee());
+            penaltyCharged = true;
         }
     }
 

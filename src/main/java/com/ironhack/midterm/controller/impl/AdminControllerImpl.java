@@ -1,6 +1,7 @@
 package com.ironhack.midterm.controller.impl;
 
 import com.ironhack.midterm.controller.dto.AccountDTO;
+import com.ironhack.midterm.controller.dto.AmountDTO;
 import com.ironhack.midterm.controller.dto.ThirdPartyDTO;
 import com.ironhack.midterm.controller.interfaces.AdminController;
 import com.ironhack.midterm.enums.AccountType;
@@ -9,6 +10,7 @@ import com.ironhack.midterm.service.*;
 import com.ironhack.midterm.utils.DateDifference;
 import org.joda.time.Years;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,6 +37,8 @@ public class AdminControllerImpl implements AdminController {
     private SavingsService savingsService;
     @Autowired
     private CreditCardService creditCardService;
+    @Autowired
+    private AccountService accountService;
 
     @Override
     @PostMapping("/admin/accounts")
@@ -85,12 +89,14 @@ public class AdminControllerImpl implements AdminController {
     }
 
     @Override
-    public void debitAccount() {
-
+    @PutMapping("/admin/accounts/{account-id}/debit")
+    public Transaction debitAccount(@AuthenticationPrincipal SecuredUser securedUser, @PathVariable(name = "account-id") Long accountId, @Valid @RequestBody AmountDTO amountDTO) {
+        return accountService.debitAccount(accountId, securedUser, amountDTO);
     }
 
     @Override
-    public void creditAccount() {
-
+    @PutMapping("/admin/accounts/{account-id}/credit")
+    public Transaction creditAccount(@AuthenticationPrincipal SecuredUser securedUser, @PathVariable(name = "account-id") Long accountId, @Valid @RequestBody AmountDTO amountDTO) {
+        return accountService.creditAccount(accountId, securedUser, amountDTO);
     }
 }

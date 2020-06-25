@@ -1,5 +1,6 @@
 package com.ironhack.midterm.service;
 
+import com.ironhack.midterm.controller.dto.AmountDTO;
 import com.ironhack.midterm.controller.dto.TransferDTO;
 import com.ironhack.midterm.exceptions.NoPermissionForUserException;
 import com.ironhack.midterm.exceptions.NoSuchAccountException;
@@ -71,8 +72,11 @@ public class AccountService {
     @Secured({"ROLE_ADMIN", "ROLE_ACCOUNTHOLDER"})
     public AccountBalance getBalanceById(Long id, Long userId, SecuredUser securedUser) {
         Account account = accountRepository.findById(id).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
-        //System.out.println(account instanceof CreditCard);
-        //System.out.println(securedUser.getRoles());
+        if (account instanceof CreditCard) {
+            ((CreditCard) account).applyInterestRate();
+        } else if (account instanceof Savings) {
+            ((Savings) account).applyInterestRate();
+        }
         for (Role role : securedUser.getRoles()) {
             if (role.getRole().equals("ROLE_ADMIN")) return new AccountBalance(account.getBalance());
         }
@@ -112,6 +116,7 @@ public class AccountService {
         }
     }
 
+    @Secured({"ROLE_ACCOUNTHOLDER"})
     @Transactional
     public Transaction transfer(Long accountId, Long userId, SecuredUser securedUser, TransferDTO transferDTO) {
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
@@ -124,8 +129,8 @@ public class AccountService {
                 throw new NoPermissionForUserException("The user doesn't correspond with the owner of the account");
             }
         }
-        User trasactionMaker = userRepository.findById(securedUser.getId()).orElseThrow(() -> new NoSuchUserException("There's no user with provided Id"));
-        Transaction transaction = new Transaction(new Money(transferDTO.getAmount()), new Date(), trasactionMaker);
+        User transactionMaker = userRepository.findById(securedUser.getId()).orElseThrow(() -> new NoSuchUserException("There's no user with provided Id"));
+        Transaction transaction = new Transaction(new Money(transferDTO.getAmount()), new Date(), transactionMaker);
         if (account instanceof CreditCard) {
             CreditCard creditCard = (CreditCard) account;
             creditCard.creditAccount(new Money(transferDTO.getAmount()));
@@ -133,6 +138,7 @@ public class AccountService {
         } else if (account instanceof Savings) {
             Savings savings = (Savings) account;
             savings.creditAccount(new Money(transferDTO.getAmount()));
+            savings.applyPenaltyFee();
             transaction.setCreditedAccount(savings);
         } else if (account instanceof StudentChecking) {
             StudentChecking studentChecking = (StudentChecking) account;
@@ -141,11 +147,70 @@ public class AccountService {
         } else if (account instanceof Checking) {
             Checking checking = (Checking) account;
             checking.creditAccount(new Money(transferDTO.getAmount()));
+            checking.applyPenaltyFee();
             transaction.setCreditedAccount(checking);
         }
         receiverAccount.debitAccount(new Money(transferDTO.getAmount()));
         transaction.setDebitedAccount(receiverAccount);
         return transactionRepository.save(transaction);
     }
+
+    @Secured({"ROLE_ADMIN"})
+    @Transactional
+    public Transaction creditAccount(Long accountId, SecuredUser securedUser, AmountDTO amountDTO) {
+        Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
+        User transactionMaker = userRepository.findById(securedUser.getId()).orElseThrow(() -> new NoSuchUserException("There's no user with provided Id"));
+        Transaction transaction = new Transaction(new Money(amountDTO.getAmount()), new Date(), transactionMaker);
+        if (account instanceof CreditCard) {
+            CreditCard creditCard = (CreditCard) account;
+            creditCard.creditAccount(new Money(amountDTO.getAmount()));
+            transaction.setCreditedAccount(creditCard);
+        } else if (account instanceof Savings) {
+            Savings savings = (Savings) account;
+            savings.creditAccount(new Money(amountDTO.getAmount()));
+            savings.applyPenaltyFee();
+            transaction.setCreditedAccount(savings);
+        } else if (account instanceof StudentChecking) {
+            StudentChecking studentChecking = (StudentChecking) account;
+            studentChecking.creditAccount(new Money(amountDTO.getAmount()));
+            transaction.setCreditedAccount(studentChecking);
+        } else if (account instanceof Checking) {
+            Checking checking = (Checking) account;
+            checking.creditAccount(new Money(amountDTO.getAmount()));
+            checking.applyPenaltyFee();
+            transaction.setCreditedAccount(checking);
+        }
+        return transactionRepository.save(transaction);
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @Transactional
+    public Transaction debitAccount(Long accountId, SecuredUser securedUser, AmountDTO amountDTO) {
+        Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
+        User transactionMaker = userRepository.findById(securedUser.getId()).orElseThrow(() -> new NoSuchUserException("There's no user with provided Id"));
+        Transaction transaction = new Transaction(new Money(amountDTO.getAmount()), new Date(), transactionMaker);
+        if (account instanceof CreditCard) {
+            CreditCard creditCard = (CreditCard) account;
+            creditCard.debitAccount(new Money(amountDTO.getAmount()));
+            transaction.setDebitedAccount(creditCard);
+        } else if (account instanceof Savings) {
+            Savings savings = (Savings) account;
+            savings.debitAccount(new Money(amountDTO.getAmount()));
+            savings.applyPenaltyFee();
+            transaction.setDebitedAccount(savings);
+        } else if (account instanceof StudentChecking) {
+            StudentChecking studentChecking = (StudentChecking) account;
+            studentChecking.debitAccount(new Money(amountDTO.getAmount()));
+            transaction.setDebitedAccount(studentChecking);
+        } else if (account instanceof Checking) {
+            Checking checking = (Checking) account;
+            checking.debitAccount(new Money(amountDTO.getAmount()));
+            checking.applyPenaltyFee();
+            transaction.setDebitedAccount(checking);
+        }
+        return transactionRepository.save(transaction);
+    }
+
+
 }
 
