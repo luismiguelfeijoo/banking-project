@@ -53,4 +53,9 @@ public class GlobalExceptionHandler {
     public void noPermissionForUserExceptionHandler(NoPermissionForUserException noPermissionForUserException, HttpServletResponse response) throws IOException {
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, noPermissionForUserException.getMessage());
     }
+
+    @ExceptionHandler(NoSuchUserException.class)
+    public void noSuchUserExceptionHadler(NoSuchUserException noSuchUserException, HttpServletResponse response) throws IOException {
+        response.sendError(HttpServletResponse.SC_NOT_FOUND, noSuchUserException.getMessage());
+    }
 }

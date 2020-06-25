@@ -141,4 +141,10 @@ public abstract class Account {
 
     public abstract void debitAccount (@PositiveOrZero Money amount);
 
+    public boolean hasAccess(Long userId) {
+        if (userId.equals(this.primaryOwner.getId())) {
+            return true;
+        } else return this.secondaryOwner != null && userId.equals(this.secondaryOwner.getId());
+    }
+
 }

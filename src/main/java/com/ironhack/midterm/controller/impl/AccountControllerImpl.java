@@ -1,5 +1,6 @@
 package com.ironhack.midterm.controller.impl;
 
+import com.ironhack.midterm.controller.dto.TransferDTO;
 import com.ironhack.midterm.controller.interfaces.AccountController;
 import com.ironhack.midterm.model.Account;
 import com.ironhack.midterm.model.SecuredUser;
@@ -8,9 +9,9 @@ import com.ironhack.midterm.view_model.AccountBalance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.method.P;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 @RestController
 public class AccountControllerImpl implements AccountController {
@@ -32,7 +33,8 @@ public class AccountControllerImpl implements AccountController {
     }
 
     @Override
-    public void transferMoney() {
+    @PostMapping("/accounts/{id}/transfer")
+    public void transferMoney(@Valid @RequestBody TransferDTO transferDTO) {
 
     }
 

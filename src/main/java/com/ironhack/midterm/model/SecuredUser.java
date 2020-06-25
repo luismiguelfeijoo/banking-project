@@ -1,6 +1,7 @@
 package com.ironhack.midterm.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.ironhack.midterm.utils.Hashing;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
@@ -24,7 +25,7 @@ public class SecuredUser extends User {
 
     public SecuredUser(@NotNull @NotEmpty String username, @NotNull @NotEmpty String name, @NotNull @NotEmpty String password) {
         super(username, name);
-        this.password = password;
+        this.password = Hashing.hash(password);
     }
 
     public String getPassword() {

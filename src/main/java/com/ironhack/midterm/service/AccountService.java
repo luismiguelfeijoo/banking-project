@@ -1,16 +1,22 @@
 package com.ironhack.midterm.service;
 
+import com.ironhack.midterm.controller.dto.TransferDTO;
 import com.ironhack.midterm.exceptions.NoPermissionForUserException;
 import com.ironhack.midterm.exceptions.NoSuchAccountException;
+import com.ironhack.midterm.exceptions.NoSuchUserException;
 import com.ironhack.midterm.model.*;
 import com.ironhack.midterm.repository.*;
+import com.ironhack.midterm.utils.Money;
 import com.ironhack.midterm.view_model.AccountBalance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.naming.NoPermissionException;
+import java.util.Date;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AccountService {
@@ -24,6 +30,10 @@ public class AccountService {
     private StudentCheckingRepository studentCheckingRepository;
     @Autowired
     private SavingsRepository savingsRepository;
+    @Autowired
+    private TransactionRepository transactionRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     // change the return to make a balanceViewModel
 
@@ -58,6 +68,84 @@ public class AccountService {
 
     }
 
+    @Secured({"ROLE_ADMIN", "ROLE_ACCOUNTHOLDER"})
+    public AccountBalance getBalanceById(Long id, Long userId, SecuredUser securedUser) {
+        Account account = accountRepository.findById(id).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
+        //System.out.println(account instanceof CreditCard);
+        //System.out.println(securedUser.getRoles());
+        for (Role role : securedUser.getRoles()) {
+            if (role.getRole().equals("ROLE_ADMIN")) return new AccountBalance(account.getBalance());
+        }
+        if (securedUser.getId().equals(userId) && userId.equals(account.getPrimaryOwner().getId())) {
+            return new AccountBalance(account.getBalance());
+        } else if (account.getSecondaryOwner() != null && securedUser.getId().equals(account.getSecondaryOwner().getId()) && userId.equals(account.getSecondaryOwner().getId()) ) {
+            return new AccountBalance(account.getBalance());
+        } else {
+            throw new NoPermissionForUserException("You don't have permission");
+        }
+        /*
+        if (securedUser.getId().equals(account.getPrimaryOwner().getId())) {
+            return new AccountBalance(account.getBalance());
+        } else if (account.getSecondaryOwner() != null && securedUser.getId().equals(account.getSecondaryOwner().getId())) {
+            return new AccountBalance(account.getBalance());
+        } else {
+            throw new NoPermissionForUserException("You don't have permission");
+        }
 
+         */
+
+    }
+
+
+    public List<AccountBalance> getAllBalanceById(Long userId, SecuredUser securedUser) {
+        List<Account> accounts = accountRepository.findByPrimaryOwnerId(userId);
+        if (accounts.size() == 0) throw new NoSuchAccountException("User doesn't have registered accounts");
+        for (Role role : securedUser.getRoles()) {
+            if (role.getRole().equals("ROLE_ADMIN")) {
+                return accounts.stream().map(account -> new AccountBalance(account.getBalance())).collect(Collectors.toList());
+            }
+        }
+        if (securedUser.getId().equals(userId)) {
+            return accounts.stream().map(account -> new AccountBalance(account.getBalance())).collect(Collectors.toList());
+        } else {
+            throw new NoPermissionForUserException("You don't have permission");
+        }
+    }
+
+    @Transactional
+    public Transaction transfer(Long accountId, Long userId, SecuredUser securedUser, TransferDTO transferDTO) {
+        Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
+        if (!account.hasAccess(userId) || !securedUser.getId().equals(userId)) throw new NoPermissionForUserException("You don't have permission to do this transfer");
+        Account receiverAccount = accountRepository.findById(transferDTO.getReceiverAccountId()).orElseThrow(() -> new NoSuchAccountException("There's no reciever account with provided ID"));
+        if (!receiverAccount.getPrimaryOwner().getName().equals(transferDTO.getReceiverName())) {
+            if (receiverAccount.getSecondaryOwner() == null)  {
+                throw new NoPermissionForUserException("The user doesn't correspond with the owner of the account");
+            } else if (!receiverAccount.getSecondaryOwner().getName().equals(transferDTO.getReceiverName())){
+                throw new NoPermissionForUserException("The user doesn't correspond with the owner of the account");
+            }
+        }
+        User trasactionMaker = userRepository.findById(securedUser.getId()).orElseThrow(() -> new NoSuchUserException("There's no user with provided Id"));
+        Transaction transaction = new Transaction(new Money(transferDTO.getAmount()), new Date(), trasactionMaker);
+        if (account instanceof CreditCard) {
+            CreditCard creditCard = (CreditCard) account;
+            creditCard.creditAccount(new Money(transferDTO.getAmount()));
+            transaction.setCreditedAccount(creditCard);
+        } else if (account instanceof Savings) {
+            Savings savings = (Savings) account;
+            savings.creditAccount(new Money(transferDTO.getAmount()));
+            transaction.setCreditedAccount(savings);
+        } else if (account instanceof StudentChecking) {
+            StudentChecking studentChecking = (StudentChecking) account;
+            studentChecking.creditAccount(new Money(transferDTO.getAmount()));
+            transaction.setCreditedAccount(studentChecking);
+        } else if (account instanceof Checking) {
+            Checking checking = (Checking) account;
+            checking.creditAccount(new Money(transferDTO.getAmount()));
+            transaction.setCreditedAccount(checking);
+        }
+        receiverAccount.debitAccount(new Money(transferDTO.getAmount()));
+        transaction.setDebitedAccount(receiverAccount);
+        return transactionRepository.save(transaction);
+    }
 }
 
