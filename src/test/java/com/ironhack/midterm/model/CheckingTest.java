@@ -25,32 +25,17 @@ class CheckingTest {
     }
 
     @Test
-    public void creditAccount_EnoughFunds_AccountCredited() {
-        BigDecimal previousBalance = checking.getBalance().getAmount();
-        Money amount = new Money(new BigDecimal("100"));
-        checking.creditAccount(amount);
-        assertEquals(previousBalance, checking.getBalance().getAmount().add(amount.getAmount()));
-    }
-
-    @Test
-    public void creditAccount_NotEnoughFunds_ThrowsException() {
-        Money amount = new Money(new BigDecimal("10000"));
-        assertThrows(NoEnoughBalanceException.class, () -> checking.creditAccount(amount));
-    }
-
-    @Test
-    public void creditAccount_NegativeAmount_ThrowError() {
-        BigDecimal previousBalance = checking.getBalance().getAmount();
-        Money amount = new Money(new BigDecimal("-100"));
-        assertThrows(NegativeAmountException.class, () -> checking.creditAccount(amount));
-    }
-
-    @Test
-    public void debitAccount_PositiveAmount_AccountDebited() {
+    public void debitAccount_EnoughFunds_AccountDebited() {
         BigDecimal previousBalance = checking.getBalance().getAmount();
         Money amount = new Money(new BigDecimal("100"));
         checking.debitAccount(amount);
-        assertEquals(previousBalance, checking.getBalance().getAmount().subtract(amount.getAmount()));
+        assertEquals(previousBalance.subtract(amount.getAmount()), checking.getBalance().getAmount());
+    }
+
+    @Test
+    public void debitAccount_NotEnoughFunds_ThrowsException() {
+        Money amount = new Money(new BigDecimal("10000"));
+        assertThrows(NoEnoughBalanceException.class, () -> checking.debitAccount(amount));
     }
 
     @Test
@@ -58,6 +43,21 @@ class CheckingTest {
         BigDecimal previousBalance = checking.getBalance().getAmount();
         Money amount = new Money(new BigDecimal("-100"));
         assertThrows(NegativeAmountException.class, () -> checking.debitAccount(amount));
+    }
+
+    @Test
+    public void creditAccount_PositiveAmount_AccountCredited() {
+        BigDecimal previousBalance = checking.getBalance().getAmount();
+        Money amount = new Money(new BigDecimal("100"));
+        checking.creditAccount(amount);
+        assertEquals(previousBalance.add(amount.getAmount()), checking.getBalance().getAmount());
+    }
+
+    @Test
+    public void creditAccount_NegativeAmount_ThrowError() {
+        BigDecimal previousBalance = checking.getBalance().getAmount();
+        Money amount = new Money(new BigDecimal("-100"));
+        assertThrows(NegativeAmountException.class, () -> checking.creditAccount(amount));
     }
 
     @Test

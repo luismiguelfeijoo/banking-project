@@ -58,19 +58,19 @@ public class CreditCard extends Account {
 
     @Override
     public void creditAccount(@PositiveOrZero Money amount) {
+        // check if balance is negative ?
+        if (amount.getAmount().compareTo(BigDecimal.ZERO) < 0) throw new NegativeAmountException("The amount must be positive");
+        this.getBalance().decreaseAmount(amount);
+    }
+
+    @Override
+    public void debitAccount(@PositiveOrZero Money amount) {
         if (amount.getAmount().compareTo(BigDecimal.ZERO) < 0) throw new NegativeAmountException("The amount must be positive");
         if (this.getCreditLimit().compareTo(amount.getAmount().add(getBalance().getAmount())) >= 0) {
             getBalance().increaseAmount(amount);
         } else {
             throw new NoEnoughBalanceException("There's not enough credit limit to do the transaction");
         }
-    }
-
-    @Override
-    public void debitAccount(@PositiveOrZero Money amount) {
-        // check if balance is negative ?
-        if (amount.getAmount().compareTo(BigDecimal.ZERO) < 0) throw new NegativeAmountException("The amount must be positive");
-        this.getBalance().decreaseAmount(amount);
     }
 
     public void applyInterestRate() {

@@ -138,24 +138,24 @@ public class AccountService {
         if (account instanceof CreditCard) {
             CreditCard creditCard = (CreditCard) account;
             creditCard.creditAccount(new Money(transferDTO.getAmount()));
-            transaction.setCreditedAccount(creditCard);
+            transaction.setDebitedAccount(creditCard);
         } else if (account instanceof Savings) {
             Savings savings = (Savings) account;
             savings.creditAccount(new Money(transferDTO.getAmount()));
             savings.applyPenaltyFee();
-            transaction.setCreditedAccount(savings);
+            transaction.setDebitedAccount(savings);
         } else if (account instanceof StudentChecking) {
             StudentChecking studentChecking = (StudentChecking) account;
             studentChecking.creditAccount(new Money(transferDTO.getAmount()));
-            transaction.setCreditedAccount(studentChecking);
+            transaction.setDebitedAccount(studentChecking);
         } else if (account instanceof Checking) {
             Checking checking = (Checking) account;
             checking.creditAccount(new Money(transferDTO.getAmount()));
             checking.applyPenaltyFee();
-            transaction.setCreditedAccount(checking);
+            transaction.setDebitedAccount(checking);
         }
         receiverAccount.debitAccount(new Money(transferDTO.getAmount()));
-        transaction.setDebitedAccount(receiverAccount);
+        transaction.setCreditedAccount(receiverAccount);
         return transactionRepository.save(transaction);
     }
 
