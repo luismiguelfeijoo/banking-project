@@ -71,14 +71,14 @@ public class Checking extends Account {
         }
     }
 
-    /*
+
     public String getSecretKey() {
         return secretKey;
     }
 
+    /*
     public void setSecretKey(String secretKey) {
         this.secretKey = secretKey;
     }
-
      */
 }

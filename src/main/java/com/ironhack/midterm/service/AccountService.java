@@ -1,9 +1,11 @@
 package com.ironhack.midterm.service;
 
 import com.ironhack.midterm.controller.dto.AmountDTO;
+import com.ironhack.midterm.controller.dto.ThirdPartyOperationDTO;
 import com.ironhack.midterm.controller.dto.TransferDTO;
 import com.ironhack.midterm.exceptions.NoPermissionForUserException;
 import com.ironhack.midterm.exceptions.NoSuchAccountException;
+import com.ironhack.midterm.exceptions.NoSuchThirdPartyException;
 import com.ironhack.midterm.exceptions.NoSuchUserException;
 import com.ironhack.midterm.model.*;
 import com.ironhack.midterm.repository.*;
@@ -35,6 +37,8 @@ public class AccountService {
     private TransactionRepository transactionRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private ThirdPartyRepository thirdPartyRepository;
 
     // change the return to make a balanceViewModel
 
@@ -183,6 +187,36 @@ public class AccountService {
         return transactionRepository.save(transaction);
     }
 
+    @Transactional
+    public Transaction creditAccount(String hashedKey, Long accountId, ThirdPartyOperationDTO operationDTO) {
+        ThirdParty thirdParty = thirdPartyRepository.findByHashedKey(hashedKey).orElseThrow(() -> new NoSuchThirdPartyException("There's no third-party with provided credentials"));
+        Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
+        Transaction transaction = new Transaction(new Money(operationDTO.getAmount()), new Date(), thirdParty);
+        if (account instanceof CreditCard) {
+            CreditCard creditCard = (CreditCard) account;
+            creditCard.creditAccount(new Money(operationDTO.getAmount()));
+            transaction.setCreditedAccount(creditCard);
+        } else if (account instanceof Savings) {
+            Savings savings = (Savings) account;
+            if (!savings.getSecretKey().equals(operationDTO.getAccountSecretKey())) throw new NoPermissionForUserException("Invalid account secret key");
+            savings.creditAccount(new Money(operationDTO.getAmount()));
+            savings.applyPenaltyFee();
+            transaction.setCreditedAccount(savings);
+        } else if (account instanceof StudentChecking) {
+            StudentChecking studentChecking = (StudentChecking) account;
+            if (!studentChecking.getSecretKey().equals(operationDTO.getAccountSecretKey())) throw new NoPermissionForUserException("Invalid account secret key");
+            studentChecking.creditAccount(new Money(operationDTO.getAmount()));
+            transaction.setCreditedAccount(studentChecking);
+        } else if (account instanceof Checking) {
+            Checking checking = (Checking) account;
+            if (!checking.getSecretKey().equals(operationDTO.getAccountSecretKey())) throw new NoPermissionForUserException("Invalid account secret key");
+            checking.creditAccount(new Money(operationDTO.getAmount()));
+            checking.applyPenaltyFee();
+            transaction.setCreditedAccount(checking);
+        }
+        return transactionRepository.save(transaction);
+    }
+
     @Secured({"ROLE_ADMIN"})
     @Transactional
     public Transaction debitAccount(Long accountId, SecuredUser securedUser, AmountDTO amountDTO) {
@@ -196,7 +230,6 @@ public class AccountService {
         } else if (account instanceof Savings) {
             Savings savings = (Savings) account;
             savings.debitAccount(new Money(amountDTO.getAmount()));
-            savings.applyPenaltyFee();
             transaction.setDebitedAccount(savings);
         } else if (account instanceof StudentChecking) {
             StudentChecking studentChecking = (StudentChecking) account;
@@ -205,6 +238,35 @@ public class AccountService {
         } else if (account instanceof Checking) {
             Checking checking = (Checking) account;
             checking.debitAccount(new Money(amountDTO.getAmount()));
+            transaction.setDebitedAccount(checking);
+        }
+        return transactionRepository.save(transaction);
+    }
+
+    @Transactional
+    public Transaction debitAccount(String hashedKey, Long accountId, ThirdPartyOperationDTO operationDTO) {
+        User thirdParty = thirdPartyRepository.findByHashedKey(hashedKey).orElseThrow(() -> new NoSuchThirdPartyException("There's no third-party with provided credentials"));
+        Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
+        Transaction transaction = new Transaction(new Money(operationDTO.getAmount()), new Date(), thirdParty);
+        if (account instanceof CreditCard) {
+            CreditCard creditCard = (CreditCard) account;
+            creditCard.debitAccount(new Money(operationDTO.getAmount()));
+            transaction.setDebitedAccount(creditCard);
+        } else if (account instanceof Savings) {
+            Savings savings = (Savings) account;
+            if (!savings.getSecretKey().equals(operationDTO.getAccountSecretKey())) throw new NoPermissionForUserException("Invalid account secret key");
+            savings.debitAccount(new Money(operationDTO.getAmount()));
+            savings.applyPenaltyFee();
+            transaction.setDebitedAccount(savings);
+        } else if (account instanceof StudentChecking) {
+            StudentChecking studentChecking = (StudentChecking) account;
+            if (!studentChecking.getSecretKey().equals(operationDTO.getAccountSecretKey())) throw new NoPermissionForUserException("Invalid account secret key");
+            studentChecking.debitAccount(new Money(operationDTO.getAmount()));
+            transaction.setDebitedAccount(studentChecking);
+        } else if (account instanceof Checking) {
+            Checking checking = (Checking) account;
+            if (!checking.getSecretKey().equals(operationDTO.getAccountSecretKey())) throw new NoPermissionForUserException("Invalid account secret key");
+            checking.debitAccount(new Money(operationDTO.getAmount()));
             checking.applyPenaltyFee();
             transaction.setDebitedAccount(checking);
         }

@@ -58,4 +58,9 @@ public class GlobalExceptionHandler {
     public void noSuchUserExceptionHadler(NoSuchUserException noSuchUserException, HttpServletResponse response) throws IOException {
         response.sendError(HttpServletResponse.SC_NOT_FOUND, noSuchUserException.getMessage());
     }
+
+    @ExceptionHandler(NoSuchThirdPartyException.class)
+    public void noSuchThirdPartyExceptionHandler(NoSuchThirdPartyException noSuchThirdPartyException, HttpServletResponse response) throws IOException {
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, noSuchThirdPartyException.getMessage());
+    }
 }
