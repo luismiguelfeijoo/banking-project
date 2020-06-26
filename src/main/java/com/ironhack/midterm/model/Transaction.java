@@ -4,6 +4,7 @@ import com.ironhack.midterm.utils.Money;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.sql.Timestamp;
 import java.util.Date;
 
 @Entity

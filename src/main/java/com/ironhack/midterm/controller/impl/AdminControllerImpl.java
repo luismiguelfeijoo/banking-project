@@ -97,6 +97,7 @@ public class AdminControllerImpl implements AdminController {
     @Override
     @PutMapping("/admin/accounts/{account-id}/credit")
     public Transaction creditAccount(@AuthenticationPrincipal SecuredUser securedUser, @PathVariable(name = "account-id") Long accountId, @Valid @RequestBody AmountDTO amountDTO) {
+        System.out.println(accountId);
         return accountService.creditAccount(accountId, securedUser, amountDTO);
     }
 }

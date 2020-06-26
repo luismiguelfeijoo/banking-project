@@ -63,4 +63,8 @@ public class GlobalExceptionHandler {
     public void noSuchThirdPartyExceptionHandler(NoSuchThirdPartyException noSuchThirdPartyException, HttpServletResponse response) throws IOException {
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, noSuchThirdPartyException.getMessage());
     }
+    @ExceptionHandler(FraudDetectionException.class)
+    public void fraudDetectionExceptionHanlder(FraudDetectionException fraudDetectionException, HttpServletResponse response) throws IOException {
+        response.sendError(HttpServletResponse.SC_CONFLICT, fraudDetectionException.getMessage());
+    }
 }

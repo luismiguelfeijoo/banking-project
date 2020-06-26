@@ -3,10 +3,8 @@ package com.ironhack.midterm.service;
 import com.ironhack.midterm.controller.dto.AmountDTO;
 import com.ironhack.midterm.controller.dto.ThirdPartyOperationDTO;
 import com.ironhack.midterm.controller.dto.TransferDTO;
-import com.ironhack.midterm.exceptions.NoPermissionForUserException;
-import com.ironhack.midterm.exceptions.NoSuchAccountException;
-import com.ironhack.midterm.exceptions.NoSuchThirdPartyException;
-import com.ironhack.midterm.exceptions.NoSuchUserException;
+import com.ironhack.midterm.enums.AccountStatus;
+import com.ironhack.midterm.exceptions.*;
 import com.ironhack.midterm.model.*;
 import com.ironhack.midterm.repository.*;
 import com.ironhack.midterm.utils.Money;
@@ -16,6 +14,7 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -124,6 +123,26 @@ public class AccountService {
     @Transactional
     public Transaction transfer(Long accountId, Long userId, SecuredUser securedUser, TransferDTO transferDTO) {
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
+        if (account.getStatus() == AccountStatus.FROZEN) throw new FraudDetectionException("Your account is blocked for fraud inspection purposes, please contact customer service");
+        if (transactionRepository.findTransactionOneSecondAgo(accountId, new Date()).size() > 0) {
+            account.setStatus(AccountStatus.FROZEN);
+            accountRepository.save(account);
+            throw new FraudDetectionException("Possible fraud detected!");
+        }
+        Double maxTransactionOfClients = transactionRepository.findHighestTotalTransactionCountOfOwner(account.getPrimaryOwner().getId(), new Date());
+        Double currentDayTransactionOfClient = transactionRepository.findCurrentDateTransactionCountOfOwner(account.getPrimaryOwner().getId(), new Date());
+        if ( maxTransactionOfClients != null ) {
+            if (currentDayTransactionOfClient.compareTo(maxTransactionOfClients * 1.5) > 0) {
+                account.setStatus(AccountStatus.FROZEN);
+                accountRepository.save(account);
+                throw new FraudDetectionException("Possible fraud detected!");
+            }
+        } else {
+            if (currentDayTransactionOfClient != null && currentDayTransactionOfClient.compareTo(2.0) >= 0) {
+                account.setStatus(AccountStatus.FROZEN);
+                throw new FraudDetectionException("Possible fraud detected!");
+            }
+        }
         if (!account.hasAccess(userId) || !securedUser.getId().equals(userId)) throw new NoPermissionForUserException("You don't have permission to do this transfer");
         Account receiverAccount = accountRepository.findById(transferDTO.getReceiverAccountId()).orElseThrow(() -> new NoSuchAccountException("There's no reciever account with provided ID"));
         if (!receiverAccount.getPrimaryOwner().getName().equals(transferDTO.getReceiverName())) {
@@ -164,6 +183,42 @@ public class AccountService {
     public Transaction creditAccount(Long accountId, SecuredUser securedUser, AmountDTO amountDTO) {
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
         User transactionMaker = userRepository.findById(securedUser.getId()).orElseThrow(() -> new NoSuchUserException("There's no user with provided Id"));
+        if (account.getStatus() == AccountStatus.FROZEN) throw new FraudDetectionException("Your account is blocked for fraud inspection purposes, please contact customer service");
+        if (transactionRepository.findTransactionOneSecondAgo(accountId, new Date()).size() > 0) {
+            account.setStatus(AccountStatus.FROZEN);
+            accountRepository.save(account);
+            throw new FraudDetectionException("Possible fraud detected!");
+        }
+        Double maxTransactionOfClients = transactionRepository.findHighestTotalTransactionCountOfOwner(account.getPrimaryOwner().getId(), new Date());
+        Double currentDayTransactionOfClient = transactionRepository.findCurrentDateTransactionCountOfOwner(account.getPrimaryOwner().getId(), new Date());
+        if ( maxTransactionOfClients != null  ) {
+            if (currentDayTransactionOfClient.compareTo(maxTransactionOfClients * 1.5) > 0) {
+                account.setStatus(AccountStatus.FROZEN);
+                accountRepository.save(account);
+                throw new FraudDetectionException("Possible fraud detected!");
+            }
+        } else {
+            if (currentDayTransactionOfClient != null && currentDayTransactionOfClient.compareTo(2.0) >= 0) {
+                account.setStatus(AccountStatus.FROZEN);
+                accountRepository.save(account);
+                throw new FraudDetectionException("Possible fraud detected!");
+            }
+        }
+        Double maxTransactionOfUser = transactionRepository.findHighestTotalTransactionCountOfUser(securedUser.getId(), new Date());
+        Double currentDayTransactionOfUser = transactionRepository.findCurrentDateTransactionCountOfUser(securedUser.getId(), new Date());
+        if ( maxTransactionOfUser != null ) {
+            if (currentDayTransactionOfUser.compareTo(maxTransactionOfUser * 1.5) > 0) {
+                account.setStatus(AccountStatus.FROZEN);
+                throw new FraudDetectionException("Possible fraud detected!");
+            }
+        } else {
+            if (currentDayTransactionOfUser != null && currentDayTransactionOfUser.compareTo(2.0) >= 0) {
+                account.setStatus(AccountStatus.FROZEN);
+                throw new FraudDetectionException("Possible fraud detected!");
+            }
+        }
+        System.out.println(maxTransactionOfClients);
+        System.out.println(currentDayTransactionOfClient);
         Transaction transaction = new Transaction(new Money(amountDTO.getAmount()), new Date(), transactionMaker);
         if (account instanceof CreditCard) {
             CreditCard creditCard = (CreditCard) account;
@@ -191,6 +246,42 @@ public class AccountService {
     public Transaction creditAccount(String hashedKey, Long accountId, ThirdPartyOperationDTO operationDTO) {
         ThirdParty thirdParty = thirdPartyRepository.findByHashedKey(hashedKey).orElseThrow(() -> new NoSuchThirdPartyException("There's no third-party with provided credentials"));
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
+        if (account.getStatus() == AccountStatus.FROZEN) throw new FraudDetectionException("Your account is blocked for fraud inspection purposes, please contact customer service");
+        if (transactionRepository.findTransactionOneSecondAgo(accountId, new Date()).size() > 0) {
+            account.setStatus(AccountStatus.FROZEN);
+            accountRepository.save(account);
+            throw new FraudDetectionException("Possible fraud detected!");
+        }
+        Double maxTransactionOfClients = transactionRepository.findHighestTotalTransactionCountOfOwner(account.getPrimaryOwner().getId(), new Date());
+        Double currentDayTransactionOfClient = transactionRepository.findCurrentDateTransactionCountOfOwner(account.getPrimaryOwner().getId(), new Date());
+        if ( maxTransactionOfClients != null  ) {
+            if (currentDayTransactionOfClient.compareTo(maxTransactionOfClients * 1.5) > 0) {
+                account.setStatus(AccountStatus.FROZEN);
+                accountRepository.save(account);
+                throw new FraudDetectionException("Possible fraud detected!");
+            }
+        } else {
+            if (currentDayTransactionOfClient != null && currentDayTransactionOfClient.compareTo(2.0) >= 0) {
+                account.setStatus(AccountStatus.FROZEN);
+                accountRepository.save(account);
+                throw new FraudDetectionException("Possible fraud detected!");
+            }
+        }
+        Double maxTransactionOfUser = transactionRepository.findHighestTotalTransactionCountOfUser(thirdParty.getId(), new Date());
+        Double currentDayTransactionOfUser = transactionRepository.findCurrentDateTransactionCountOfUser(thirdParty.getId(), new Date());
+        if ( maxTransactionOfUser != null ) {
+            if (currentDayTransactionOfUser.compareTo(maxTransactionOfUser * 1.5) > 0) {
+                account.setStatus(AccountStatus.FROZEN);
+                accountRepository.save(account);
+                throw new FraudDetectionException("Possible fraud detected!");
+            }
+        } else {
+            if (currentDayTransactionOfUser != null && currentDayTransactionOfUser.compareTo(2.0) >= 0) {
+                account.setStatus(AccountStatus.FROZEN);
+                accountRepository.save(account);
+                throw new FraudDetectionException("Possible fraud detected!");
+            }
+        }
         Transaction transaction = new Transaction(new Money(operationDTO.getAmount()), new Date(), thirdParty);
         if (account instanceof CreditCard) {
             CreditCard creditCard = (CreditCard) account;
@@ -222,6 +313,41 @@ public class AccountService {
     public Transaction debitAccount(Long accountId, SecuredUser securedUser, AmountDTO amountDTO) {
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
         User transactionMaker = userRepository.findById(securedUser.getId()).orElseThrow(() -> new NoSuchUserException("There's no user with provided Id"));
+        if (account.getStatus() == AccountStatus.FROZEN) throw new FraudDetectionException("Your account is blocked for fraud inspection purposes, please contact customer service");
+        if (transactionRepository.findTransactionOneSecondAgo(accountId, new Date()).size() > 0) {
+            account.setStatus(AccountStatus.FROZEN);
+            accountRepository.save(account);
+            throw new FraudDetectionException("Possible fraud detected!");
+        }
+        Double maxTransactionOfClients = transactionRepository.findHighestTotalTransactionCountOfOwner(account.getPrimaryOwner().getId(), new Date());
+        Double currentDayTransactionOfClient = transactionRepository.findCurrentDateTransactionCountOfOwner(account.getPrimaryOwner().getId(), new Date());
+        if ( maxTransactionOfClients != null  ) {
+            if (currentDayTransactionOfClient.compareTo(maxTransactionOfClients * 1.5) > 0) {
+                account.setStatus(AccountStatus.FROZEN);
+                accountRepository.save(account);
+                throw new FraudDetectionException("Possible fraud detected!");
+            }
+        } else {
+            if (currentDayTransactionOfClient != null && currentDayTransactionOfClient.compareTo(2.0) >= 0) {
+                account.setStatus(AccountStatus.FROZEN);
+                accountRepository.save(account);
+                throw new FraudDetectionException("Possible fraud detected!");
+            }
+        }
+        Double maxTransactionOfUser = transactionRepository.findHighestTotalTransactionCountOfUser(securedUser.getId(), new Date());
+        Double currentDayTransactionOfUser = transactionRepository.findCurrentDateTransactionCountOfUser(securedUser.getId(), new Date());
+        if ( maxTransactionOfUser != null ) {
+            if (currentDayTransactionOfUser.compareTo(maxTransactionOfUser * 1.5) > 0) {
+                account.setStatus(AccountStatus.FROZEN);
+                accountRepository.save(account);
+                throw new FraudDetectionException("Possible fraud detected!");
+            }
+        } else {
+            if (currentDayTransactionOfUser != null && currentDayTransactionOfUser.compareTo(2.0) >= 0) {
+                account.setStatus(AccountStatus.FROZEN);
+                throw new FraudDetectionException("Possible fraud detected!");
+            }
+        }
         Transaction transaction = new Transaction(new Money(amountDTO.getAmount()), new Date(), transactionMaker);
         if (account instanceof CreditCard) {
             CreditCard creditCard = (CreditCard) account;
@@ -247,6 +373,41 @@ public class AccountService {
     public Transaction debitAccount(String hashedKey, Long accountId, ThirdPartyOperationDTO operationDTO) {
         User thirdParty = thirdPartyRepository.findByHashedKey(hashedKey).orElseThrow(() -> new NoSuchThirdPartyException("There's no third-party with provided credentials"));
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
+        if (account.getStatus() == AccountStatus.FROZEN) throw new FraudDetectionException("Your account is blocked for fraud inspection purposes, please contact customer service");
+        if (transactionRepository.findTransactionOneSecondAgo(accountId, new Date()).size() > 0) {
+            account.setStatus(AccountStatus.FROZEN);
+            accountRepository.save(account);
+            throw new FraudDetectionException("Possible fraud detected!");
+        }
+        Double maxTransactionOfClients = transactionRepository.findHighestTotalTransactionCountOfOwner(account.getPrimaryOwner().getId(), new Date());
+        Double currentDayTransactionOfClient = transactionRepository.findCurrentDateTransactionCountOfOwner(account.getPrimaryOwner().getId(), new Date());
+        if ( maxTransactionOfClients != null  ) {
+            if (currentDayTransactionOfClient.compareTo(maxTransactionOfClients * 1.5) > 0) {
+                account.setStatus(AccountStatus.FROZEN);
+                accountRepository.save(account);
+                throw new FraudDetectionException("Possible fraud detected!");
+            }
+        } else {
+            if (currentDayTransactionOfClient != null && currentDayTransactionOfClient.compareTo(2.0) >= 0) {
+                account.setStatus(AccountStatus.FROZEN);
+                accountRepository.save(account);
+                throw new FraudDetectionException("Possible fraud detected!");
+            }
+        }
+        Double maxTransactionOfUser = transactionRepository.findHighestTotalTransactionCountOfUser(thirdParty.getId(), new Date());
+        Double currentDayTransactionOfUser = transactionRepository.findCurrentDateTransactionCountOfUser(thirdParty.getId(), new Date());
+        if ( maxTransactionOfUser != null ) {
+            if (currentDayTransactionOfUser.compareTo(maxTransactionOfUser * 1.5) > 0) {
+                account.setStatus(AccountStatus.FROZEN);
+                accountRepository.save(account);
+                throw new FraudDetectionException("Possible fraud detected!");
+            }
+        } else {
+            if (currentDayTransactionOfUser != null && currentDayTransactionOfUser.compareTo(2.0) >= 0) {
+                account.setStatus(AccountStatus.FROZEN);
+                throw new FraudDetectionException("Possible fraud detected!");
+            }
+        }
         Transaction transaction = new Transaction(new Money(operationDTO.getAmount()), new Date(), thirdParty);
         if (account instanceof CreditCard) {
             CreditCard creditCard = (CreditCard) account;
