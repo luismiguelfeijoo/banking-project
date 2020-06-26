@@ -22,13 +22,13 @@ public class AccountHolderService {
     @Secured({"ROLE_ADMIN"})
     @Transactional
     public AccountHolder create(AccountHolder accountHolder) {
-        AccountHolder newAccountHolder = new AccountHolder(accountHolder.getUsername(), accountHolder.getName(), accountHolder.getPassword(), accountHolder.getDateOfBirth(), accountHolder.getPrimaryAddress());
+        //AccountHolder newAccountHolder = new AccountHolder(accountHolder.getUsername(), accountHolder.getName(), accountHolder.getPassword(), accountHolder.getDateOfBirth(), accountHolder.getPrimaryAddress());
         Role role = new Role();
         if (accountHolder.getMailingAddress() != null)
-            newAccountHolder.setMailingAddress(accountHolder.getMailingAddress());
+            accountHolder.setMailingAddress(accountHolder.getMailingAddress());
         role.setRole("ROLE_ACCOUNTHOLDER");
-        role.setUser(newAccountHolder);
-        AccountHolder result = accountHolderRepository.save(newAccountHolder);
+        role.setUser(accountHolder);
+        AccountHolder result = accountHolderRepository.save(accountHolder);
         roleRepository.save(role);
         return result;
     }
