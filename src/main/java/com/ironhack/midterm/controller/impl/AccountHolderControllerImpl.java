@@ -20,7 +20,7 @@ public class AccountHolderControllerImpl implements AccountHolderController {
     @Override
     @GetMapping("/account-holders/{id}/accounts")
     public List<AccountBalance> getBalance(@AuthenticationPrincipal SecuredUser securedUser, @PathVariable(name = "id") Long userId) {
-        return accountService.getAllBalanceById(userId, securedUser);
+        return accountService.getAllBalanceByUserId(userId, securedUser);
     }
 
     @Override

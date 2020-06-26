@@ -105,7 +105,7 @@ public class AccountService {
     }
 
 
-    public List<AccountBalance> getAllBalanceById(Long userId, SecuredUser securedUser) {
+    public List<AccountBalance> getAllBalanceByUserId(Long userId, SecuredUser securedUser) {
         List<Account> accounts = accountRepository.findByPrimaryOwnerId(userId);
         if (accounts.size() == 0) throw new NoSuchAccountException("User doesn't have registered accounts");
         for (Role role : securedUser.getRoles()) {
