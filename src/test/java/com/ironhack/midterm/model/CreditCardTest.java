@@ -88,38 +88,38 @@ class CreditCardTest {
     }
 
     @Test
-    public void creditAccount_EnoughLimit_AccountCredited() {
+    public void debitAccount_EnoughLimit_AccountDebited() {
         BigDecimal previousBalance = creditCard.getBalance().getAmount();
         Money amount = new Money(new BigDecimal("100"));
-        creditCard.creditAccount(amount);
+        creditCard.debitAccount(amount);
         assertEquals(previousBalance.add(amount.getAmount()), creditCard.getBalance().getAmount());
     }
 
     @Test
-    public void creditAccount_NotEnoughLimit_ThrowsException() {
+    public void debitAccount_NotEnoughLimit_ThrowsException() {
         BigDecimal creditLimit = creditCard.getCreditLimit();
         Money amount = new Money(creditLimit.add(new BigDecimal("1000")));
-        assertThrows(NoEnoughBalanceException.class, () -> creditCard.creditAccount(amount));
-    }
-
-    @Test
-    public void creditAccount_NegativeAmount_ThrowError() {
-        Money amount = new Money(new BigDecimal("-100"));
-        assertThrows(NegativeAmountException.class, () -> creditCard.creditAccount(amount));
-    }
-
-    @Test
-    public void debitAccount_PositiveAmount_AccountDebited() {
-        BigDecimal previousBalance = creditCard.getBalance().getAmount();
-        Money amount = new Money(new BigDecimal("100"));
-        creditCard.debitAccount(amount);
-        assertEquals(previousBalance.subtract(amount.getAmount()), creditCard.getBalance().getAmount());
+        assertThrows(NoEnoughBalanceException.class, () -> creditCard.debitAccount(amount));
     }
 
     @Test
     public void debitAccount_NegativeAmount_ThrowError() {
         Money amount = new Money(new BigDecimal("-100"));
         assertThrows(NegativeAmountException.class, () -> creditCard.debitAccount(amount));
+    }
+
+    @Test
+    public void creditAccount_PositiveAmount_AccountDebited() {
+        BigDecimal previousBalance = creditCard.getBalance().getAmount();
+        Money amount = new Money(new BigDecimal("100"));
+        creditCard.creditAccount(amount);
+        assertEquals(previousBalance.subtract(amount.getAmount()), creditCard.getBalance().getAmount());
+    }
+
+    @Test
+    public void creditAccount_NegativeAmount_ThrowError() {
+        Money amount = new Money(new BigDecimal("-100"));
+        assertThrows(NegativeAmountException.class, () -> creditCard.creditAccount(amount));
     }
 
     @Test
