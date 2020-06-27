@@ -37,6 +37,7 @@ public class AccountHolderService {
         return accountHolderRepository.findById(id).orElseThrow(() -> new NoSuchAccountHolderException("There's no account holder with provided id"));
     }
 
+    @Secured({"ROLE_ADMIN"})
     public List<AccountHolder> findAll() {
         return accountHolderRepository.findAll();
     }

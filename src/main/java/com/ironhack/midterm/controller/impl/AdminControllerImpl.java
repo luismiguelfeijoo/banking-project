@@ -4,24 +4,15 @@ import com.ironhack.midterm.controller.dto.AccountDTO;
 import com.ironhack.midterm.controller.dto.AmountDTO;
 import com.ironhack.midterm.controller.dto.ThirdPartyDTO;
 import com.ironhack.midterm.controller.interfaces.AdminController;
-import com.ironhack.midterm.enums.AccountType;
 import com.ironhack.midterm.model.*;
 import com.ironhack.midterm.service.*;
-import com.ironhack.midterm.utils.DateDifference;
+import com.ironhack.midterm.view_model.AccountBalance;
 import com.ironhack.midterm.view_model.TransactionComplete;
-import org.joda.time.Years;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.Period;
-import java.time.ZoneId;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -73,7 +64,7 @@ public class AdminControllerImpl implements AdminController {
     }
 
     @Override
-    @PostMapping("/admin/account-holder")
+    @PostMapping("/admin/account-holders")
     public AccountHolder createAccountHolder(@Valid @RequestBody AccountHolder accountHolder) {
         return accountHolderService.create(accountHolder);
     }
@@ -85,8 +76,9 @@ public class AdminControllerImpl implements AdminController {
     }
 
     @Override
-    public Account accessAccount() {
-        return null;
+    @GetMapping("/admin/accounts/{account-id}")
+    public AccountBalance accessAccount(@PathVariable(name = "account-id") Long accountId) {
+        return accountService.getBalanceById(accountId);
     }
 
     @Override

@@ -97,6 +97,7 @@ class AccountHolderServiceUnitTest {
     }
 
     @Test
+    @WithMockUser(roles = {"ADMIN"})
     public void findAll() {
         List<AccountHolder> accountHolderList = accountHolderService.findAll();
         assertEquals(3, accountHolderList.size());
