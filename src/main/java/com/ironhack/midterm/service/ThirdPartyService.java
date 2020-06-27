@@ -15,7 +15,7 @@ public class ThirdPartyService {
 
     @Secured({"ROLE_ADMIN"})
     public ThirdParty create(ThirdPartyDTO thirdPartyDTO) {
-        ThirdParty newThirdParty = new ThirdParty(thirdPartyDTO.getUsername(), thirdPartyDTO.getName(), Hashing.hash(thirdPartyDTO.getKey()));
+        ThirdParty newThirdParty = new ThirdParty(thirdPartyDTO.getUsername(), thirdPartyDTO.getName());
         return thirdPartyRepository.save(newThirdParty);
     }
 }

@@ -1,28 +1,31 @@
 package com.ironhack.midterm.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import org.hibernate.annotations.Type;
+
+import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.UUID;
 
 @Entity
 public class ThirdParty extends User {
 
     @NotNull
-    private String hashedKey;
+    @Column(unique = true)
+    @Type(type = "uuid-char")
+    // v4 UUID, the most secured of the easiest ways to create a random UUID
+    private UUID hashedKey;
 
     public ThirdParty() {
     }
 
-    public ThirdParty(@NotNull @NotEmpty String username, @NotNull @NotEmpty String name, @NotNull String hashedKey) {
+    public ThirdParty(@NotNull @NotEmpty String username, @NotNull @NotEmpty String name) {
         super(username, name);
-        this.hashedKey = hashedKey;
+        this.hashedKey = UUID.randomUUID();
     }
 
-    public String getHashedKey() {
-        return hashedKey;
+    public UUID getHashedKey() {
+        return this.hashedKey;
     }
 
     /*

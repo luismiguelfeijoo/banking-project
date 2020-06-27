@@ -13,6 +13,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.test.context.support.WithMockUser;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
@@ -27,8 +29,8 @@ class ThirdPartyServiceUnitTest {
     ThirdPartyDTO thirdPartyDTO;
     @BeforeEach
     public void setUp() {
-        thirdPartyDTO = new ThirdPartyDTO("testPass", "test", "test");
-        when(thirdPartyRepository.save(Mockito.any(ThirdParty.class))).thenReturn(new ThirdParty(thirdPartyDTO.getUsername(), thirdPartyDTO.getName(), Hashing.hash(thirdPartyDTO.getKey())));
+        thirdPartyDTO = new ThirdPartyDTO("testPass", "test");
+        when(thirdPartyRepository.save(Mockito.any(ThirdParty.class))).thenReturn(new ThirdParty(thirdPartyDTO.getUsername(), thirdPartyDTO.getName()));
     }
 
     @Test
@@ -37,7 +39,8 @@ class ThirdPartyServiceUnitTest {
         ThirdParty newThirdParty = thirdPartyService.create(thirdPartyDTO);
         assertEquals(thirdPartyDTO.getName(), newThirdParty.getName());
         assertEquals(thirdPartyDTO.getUsername(), newThirdParty.getUsername());
-        assertFalse(thirdPartyDTO.getKey().equals(newThirdParty.getHashedKey()));
+        UUID key = newThirdParty.getHashedKey();
+        assertNotNull(key);
     }
 
     @Test

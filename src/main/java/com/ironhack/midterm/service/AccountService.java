@@ -14,10 +14,7 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -57,8 +54,6 @@ public class AccountService {
     public AccountBalance getBalanceById(Long id, SecuredUser securedUser) {
         Account account = accountRepository.findById(id).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
         System.out.println(account.getClass());
-        //System.out.println(account instanceof CreditCard);
-        //System.out.println(securedUser.getRoles());
         for (Role role : securedUser.getRoles()) {
             if (role.getRole().equals("ROLE_ADMIN")) return new AccountBalance(account.getBalance());
         }
@@ -90,17 +85,6 @@ public class AccountService {
         } else {
             throw new NoPermissionForUserException("You don't have permission");
         }
-        /*
-        if (securedUser.getId().equals(account.getPrimaryOwner().getId())) {
-            return new AccountBalance(account.getBalance());
-        } else if (account.getSecondaryOwner() != null && securedUser.getId().equals(account.getSecondaryOwner().getId())) {
-            return new AccountBalance(account.getBalance());
-        } else {
-            throw new NoPermissionForUserException("You don't have permission");
-        }
-
-         */
-
     }
 
 
@@ -243,7 +227,7 @@ public class AccountService {
     }
 
     @Transactional
-    public Transaction creditAccount(String hashedKey, Long accountId, ThirdPartyOperationDTO operationDTO) {
+    public Transaction creditAccount(UUID hashedKey, Long accountId, ThirdPartyOperationDTO operationDTO) {
         ThirdParty thirdParty = thirdPartyRepository.findByHashedKey(hashedKey).orElseThrow(() -> new NoSuchThirdPartyException("There's no third-party with provided credentials"));
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
         if (account.getStatus() == AccountStatus.FROZEN) throw new FraudDetectionException("Your account is blocked for fraud inspection purposes, please contact customer service");
@@ -370,7 +354,7 @@ public class AccountService {
     }
 
     @Transactional
-    public Transaction debitAccount(String hashedKey, Long accountId, ThirdPartyOperationDTO operationDTO) {
+    public Transaction debitAccount(UUID hashedKey, Long accountId, ThirdPartyOperationDTO operationDTO) {
         User thirdParty = thirdPartyRepository.findByHashedKey(hashedKey).orElseThrow(() -> new NoSuchThirdPartyException("There's no third-party with provided credentials"));
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
         if (account.getStatus() == AccountStatus.FROZEN) throw new FraudDetectionException("Your account is blocked for fraud inspection purposes, please contact customer service");
