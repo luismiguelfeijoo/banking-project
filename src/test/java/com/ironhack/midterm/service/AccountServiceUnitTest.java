@@ -1,10 +1,10 @@
 package com.ironhack.midterm.service;
 
 import com.ironhack.midterm.controller.dto.AmountDTO;
+import com.ironhack.midterm.controller.dto.ThirdPartyOperationDTO;
 import com.ironhack.midterm.controller.dto.TransferDTO;
-import com.ironhack.midterm.exceptions.NoPermissionForUserException;
-import com.ironhack.midterm.exceptions.NoSuchAccountException;
-import com.ironhack.midterm.exceptions.NoSuchUserException;
+import com.ironhack.midterm.enums.AccountStatus;
+import com.ironhack.midterm.exceptions.*;
 import com.ironhack.midterm.model.*;
 import com.ironhack.midterm.repository.*;
 import com.ironhack.midterm.utils.Address;
@@ -17,7 +17,6 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.test.context.support.WithMockUser;
 
@@ -62,6 +61,8 @@ class AccountServiceUnitTest {
     TransferDTO transferDTO = new TransferDTO();
     AmountDTO amountDTO = new AmountDTO();
     SecuredUser admin;
+    ThirdParty thirdParty;
+    ThirdPartyOperationDTO operationDTO = new ThirdPartyOperationDTO();
 
 
     @BeforeEach
@@ -76,6 +77,8 @@ class AccountServiceUnitTest {
         accountHolder3 = new AccountHolder("test3", "test3", "testPassword", calendar.getTime(), address);
         admin = new AccountHolder("admin", "admin", "admin", calendar.getTime(), address);
         admin.setId((long) 99);
+        thirdParty = new ThirdParty("third-party", "third-party");
+        thirdParty.setId((long) 9);
         accountHolder3.setId((long)3);
         checking1 = new Checking(new Money(new BigDecimal("2000")), accountHolder1);
         checking1.setId((long) 1);
@@ -90,7 +93,6 @@ class AccountServiceUnitTest {
         creditCard1.setId((long) 5);
         studentChecking1 = new StudentChecking(new Money(new BigDecimal("2000")), accountHolder1);
         studentChecking1.setId((long) 6);
-
         List<Account> accountHolder1Accounts = Stream.of(checking1, checking3, savings1, creditCard1, studentChecking1).collect(Collectors.toList());
         when(accountRepository.findById(checking1.getId())).thenReturn(Optional.of(checking1));
         when(accountRepository.findById(checking2.getId())).thenReturn(Optional.of(checking2));
@@ -100,6 +102,7 @@ class AccountServiceUnitTest {
         when(accountRepository.findByPrimaryOwnerId(accountHolder1.getId())).thenReturn(accountHolder1Accounts);
         when(userRepository.findById(accountHolder1.getId())).thenReturn(Optional.of(accountHolder1));
         when(userRepository.findById(admin.getId())).thenReturn(Optional.of(admin));
+        when(thirdPartyRepository.findByHashedKey(thirdParty.getHashedKey())).thenReturn(Optional.of(thirdParty));
     }
 
     @Test
@@ -204,8 +207,8 @@ class AccountServiceUnitTest {
     public void transfer_FromCheckingAccount_TransferMade() {
         BigDecimal amount = new BigDecimal("1000");
         transferDTO.setAmount(amount);
-        transferDTO.setRecieverAccountId((long) 2);
-        transferDTO.setRecieverName("test3");
+        transferDTO.setReceiverAccountId((long) 2);
+        transferDTO.setReceiverName("test3");
         Transaction transaction = new Transaction(new Money(amount), new Date(), accountHolder1);
         transaction.setDebitedAccount(checking1);
         when(transactionRepository.save(Mockito.any(Transaction.class))).thenReturn(transaction);
@@ -221,8 +224,8 @@ class AccountServiceUnitTest {
     public void transfer_FromSavingsAccount_TransferMade() {
         BigDecimal amount = new BigDecimal("1000");
         transferDTO.setAmount(amount);
-        transferDTO.setRecieverAccountId((long) 2);
-        transferDTO.setRecieverName("test3");
+        transferDTO.setReceiverAccountId((long) 2);
+        transferDTO.setReceiverName("test3");
         Transaction transaction = new Transaction(new Money(amount), new Date(), accountHolder1);
         transaction.setDebitedAccount(savings1);
         when(transactionRepository.save(Mockito.any(Transaction.class))).thenReturn(transaction);
@@ -238,8 +241,8 @@ class AccountServiceUnitTest {
     public void transfer_FromCreditCardAccount_TransferMade() {
         BigDecimal amount = new BigDecimal("100");
         transferDTO.setAmount(amount);
-        transferDTO.setRecieverAccountId((long) 2);
-        transferDTO.setRecieverName("test3");
+        transferDTO.setReceiverAccountId((long) 2);
+        transferDTO.setReceiverName("test3");
         Transaction transaction = new Transaction(new Money(amount), new Date(), accountHolder1);
         transaction.setDebitedAccount(creditCard1);
         when(transactionRepository.save(Mockito.any(Transaction.class))).thenReturn(transaction);
@@ -255,8 +258,8 @@ class AccountServiceUnitTest {
     public void transfer_FromStudentCheckingAccount_TransferMade() {
         BigDecimal amount = new BigDecimal("1000");
         transferDTO.setAmount(amount);
-        transferDTO.setRecieverAccountId((long) 2);
-        transferDTO.setRecieverName("test3");
+        transferDTO.setReceiverAccountId((long) 2);
+        transferDTO.setReceiverName("test3");
         Transaction transaction = new Transaction(new Money(amount), new Date(), accountHolder1);
         transaction.setDebitedAccount(creditCard1);
         when(transactionRepository.save(Mockito.any(Transaction.class))).thenReturn(transaction);
@@ -272,8 +275,8 @@ class AccountServiceUnitTest {
     public void transfer_BadUserNameAndNoSecondOwner_ThrowsException() {
         BigDecimal amount = new BigDecimal("1000");
         transferDTO.setAmount(amount);
-        transferDTO.setRecieverAccountId((long) 2);
-        transferDTO.setRecieverName("notfound");
+        transferDTO.setReceiverAccountId((long) 2);
+        transferDTO.setReceiverName("notfound");
         assertThrows(NoPermissionForUserException.class, () -> accountService.transfer(checking1.getId(), accountHolder1, transferDTO));
     }
 
@@ -282,18 +285,67 @@ class AccountServiceUnitTest {
     public void transfer_BadUserNameAndSecondOwner_ThrowsException() {
         BigDecimal amount = new BigDecimal("1000");
         transferDTO.setAmount(amount);
-        transferDTO.setRecieverAccountId((long) 2);
-        transferDTO.setRecieverName("notfound");
-        checking1.setSecondaryOwner(accountHolder2);
-        assertThrows(NoPermissionForUserException.class, () -> accountService.transfer(checking1.getId(), accountHolder1, transferDTO));
+        transferDTO.setReceiverAccountId((long) 2);
+        transferDTO.setReceiverName("notfound");
+        checking2.setSecondaryOwner(accountHolder2);
+        assertThrows(NoPermissionForUserException.class, () -> accountService.transfer(checking2.getId(), accountHolder1, transferDTO));
+    }
+
+    @Test
+    @WithMockUser(roles = {"ACCOUNTHOLDER"})
+    public void transfer_AccountBlocked_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        transferDTO.setAmount(amount);
+        transferDTO.setReceiverAccountId((long) 2);
+        transferDTO.setReceiverName("notfound");
+        checking1.setStatus(AccountStatus.FROZEN);
+        assertThrows(FraudDetectionException.class, () -> accountService.transfer(checking1.getId(), accountHolder1, transferDTO));
+    }
+
+    @Test
+    @WithMockUser(roles = {"ACCOUNTHOLDER"})
+    public void transfer_PreviousTransaction_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        transferDTO.setAmount(amount);
+        transferDTO.setReceiverAccountId((long) 2);
+        transferDTO.setReceiverName("notfound");
+        List<Transaction> previousTransactions = new ArrayList<>();
+        Transaction transaction = new Transaction(new Money(amount), new Date(), admin);
+        previousTransactions.add(transaction);
+        when(transactionRepository.findTransactionOneSecondAgo(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(previousTransactions);
+        assertThrows(FraudDetectionException.class, () -> accountService.transfer(checking1.getId(), accountHolder1, transferDTO));
+    }
+
+    @Test
+    @WithMockUser(roles = {"ACCOUNTHOLDER"})
+    public void transfer_MaxNumberOfClientTransactionsNullAndCurrentNumberMoreThan2_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        transferDTO.setAmount(amount);
+        transferDTO.setReceiverAccountId((long) 2);
+        transferDTO.setReceiverName("notfound");
+        Transaction transaction = new Transaction(new Money(amount), new Date(), admin);
+        when(transactionRepository.findCurrentDateTransactionCountOfOwner(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(3.0);
+        when(transactionRepository.findHighestTotalTransactionCountOfOwner(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(null);
+        assertThrows(FraudDetectionException.class, () -> accountService.transfer(checking1.getId(), accountHolder1, transferDTO));
+    }
+
+    @Test
+    @WithMockUser(roles = {"ACCOUNTHOLDER"})
+    public void transfer_MaxNumberOfClientTransactionsSmallerThanCurrentNumber_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        transferDTO.setAmount(amount);
+        transferDTO.setReceiverAccountId((long) 2);
+        transferDTO.setReceiverName("notfound");
+        Transaction transaction = new Transaction(new Money(amount), new Date(), admin);
+        when(transactionRepository.findCurrentDateTransactionCountOfOwner(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(4.0);
+        when(transactionRepository.findHighestTotalTransactionCountOfOwner(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(2.0);
+        assertThrows(FraudDetectionException.class, () -> accountService.transfer(checking1.getId(), accountHolder1, transferDTO));
     }
 
     @Test
     public void transfer_NotAuth_ThrowsException() {
         assertThrows(AuthenticationCredentialsNotFoundException.class, () -> accountService.transfer(checking1.getId(), accountHolder1, transferDTO));
     }
-
-    public void creditAccount() {}
 
     @Test
     @WithMockUser(roles = {"ADMIN"})
@@ -365,8 +417,215 @@ class AccountServiceUnitTest {
         assertThrows(AuthenticationCredentialsNotFoundException.class, () -> accountService.creditAccount(checking1.getId(), accountHolder1, amountDTO));
     }
 
+    @Test
+    @WithMockUser(roles = {"ADMIN"})
+    public void creditAccount_FrozenAccount_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        amountDTO.setAmount(amount);
+        Transaction transaction = new Transaction(new Money(amount), new Date(), admin);
+        transaction.setCreditedAccount(checking1);
+        checking1.setStatus(AccountStatus.FROZEN);
+        assertThrows(FraudDetectionException.class, () -> accountService.creditAccount(checking1.getId(), admin, amountDTO));
+    }
 
-    public void debitAccount() {}
+    @Test
+    @WithMockUser(roles = {"ADMIN"})
+    public void creditAccount_PreviousTransaction_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        amountDTO.setAmount(amount);
+        Transaction transaction = new Transaction(new Money(amount), new Date(), admin);
+        transaction.setCreditedAccount(checking1);
+        List<Transaction> previousTransactions = new ArrayList<>();
+        previousTransactions.add(transaction);
+        when(transactionRepository.findTransactionOneSecondAgo(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(previousTransactions);
+        assertThrows(FraudDetectionException.class, () -> accountService.creditAccount(checking1.getId(), admin, amountDTO));
+    }
+
+    @Test
+    @WithMockUser(roles = {"ADMIN"})
+    public void creditAccount_MaxNumberOfOwnerTransactionsNullAndCurrentNumberMax_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        amountDTO.setAmount(amount);
+        Transaction transaction = new Transaction(new Money(amount), new Date(), admin);
+        transaction.setCreditedAccount(checking1);
+        when(transactionRepository.findCurrentDateTransactionCountOfOwner(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(2.0);
+        when(transactionRepository.findHighestTotalTransactionCountOfOwner(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(null);
+        assertThrows(FraudDetectionException.class, () -> accountService.creditAccount(checking1.getId(), admin, amountDTO));
+    }
+
+    @Test
+    @WithMockUser(roles = {"ADMIN"})
+    public void creditAccount_MaxNumberOfOwnerTransactionsSmallerThanCurrentNumber_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        amountDTO.setAmount(amount);
+        Transaction transaction = new Transaction(new Money(amount), new Date(), admin);
+        transaction.setCreditedAccount(checking1);
+
+        when(transactionRepository.findCurrentDateTransactionCountOfOwner(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(4.0);
+        when(transactionRepository.findHighestTotalTransactionCountOfOwner(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(2.0);
+        assertThrows(FraudDetectionException.class, () -> accountService.creditAccount(checking1.getId(), admin, amountDTO));
+    }
+
+    @Test
+    @WithMockUser(roles = {"ADMIN"})
+    public void creditAccount_MaxNumberOfAdminTransactionsNullAndCurrentNumberMax_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        amountDTO.setAmount(amount);
+        Transaction transaction = new Transaction(new Money(amount), new Date(), admin);
+        transaction.setCreditedAccount(checking1);
+        when(transactionRepository.findCurrentDateTransactionCountOfUser(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(2.0);
+        when(transactionRepository.findHighestTotalTransactionCountOfUser(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(null);
+        assertThrows(FraudDetectionException.class, () -> accountService.creditAccount(checking1.getId(), admin, amountDTO));
+    }
+
+    @Test
+    @WithMockUser(roles = {"ADMIN"})
+    public void creditAccount_MaxNumberOfAdminTransactionsSmallerThanCurrentNumber_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        amountDTO.setAmount(amount);
+        Transaction transaction = new Transaction(new Money(amount), new Date(), admin);
+        transaction.setCreditedAccount(checking1);
+
+        when(transactionRepository.findCurrentDateTransactionCountOfUser(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(4.0);
+        when(transactionRepository.findHighestTotalTransactionCountOfUser(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(2.0);
+        assertThrows(FraudDetectionException.class, () -> accountService.creditAccount(checking1.getId(), admin, amountDTO));
+    }
+
+
+    @Test
+    public void creditAccount_ThirdPartyToCheckingAccount_accountCredited() {
+        BigDecimal amount = new BigDecimal("1000");
+        operationDTO.setAmount(amount);
+        operationDTO.setAccountSecretKey(checking1.getSecretKey());
+        Transaction transaction = new Transaction(new Money(amount), new Date(), thirdParty);
+        transaction.setCreditedAccount(checking1);
+        when(transactionRepository.save(Mockito.any(Transaction.class))).thenReturn(transaction);
+        TransactionComplete result = accountService.creditAccount(thirdParty.getHashedKey(), checking1.getId(), operationDTO);
+        assertEquals(thirdParty.getId(),result.getTransactionMakerId());
+        assertNull(result.getUserAccount());
+        assertEquals(new BigDecimal("3000.00"), checking1.getBalance().getAmount());
+    }
+
+
+    @Test
+    public void creditAccount_ThirdPartyToSavingsAccount_accountCredited() {
+        BigDecimal amount = new BigDecimal("1000");
+        operationDTO.setAmount(amount);
+        operationDTO.setAccountSecretKey(savings1.getSecretKey());
+        Transaction transaction = new Transaction(new Money(amount), new Date(), thirdParty);
+        transaction.setCreditedAccount(savings1);
+        when(transactionRepository.save(Mockito.any(Transaction.class))).thenReturn(transaction);
+        TransactionComplete result = accountService.creditAccount(thirdParty.getHashedKey(), savings1.getId(), operationDTO);
+        assertEquals(thirdParty.getId(),result.getTransactionMakerId());
+        assertNull(result.getUserAccount());
+        assertEquals(new BigDecimal("3000.00"), savings1.getBalance().getAmount());
+    }
+
+    @Test
+    public void creditAccount_ThirdPartyToCreditCardAccount_accountCredited() {
+        BigDecimal amount = new BigDecimal("100");
+        operationDTO.setAmount(amount);
+        Transaction transaction = new Transaction(new Money(amount), new Date(), thirdParty);
+        transaction.setCreditedAccount(creditCard1);
+        when(transactionRepository.save(Mockito.any(Transaction.class))).thenReturn(transaction);
+        TransactionComplete result = accountService.creditAccount(thirdParty.getHashedKey(), creditCard1.getId(), operationDTO);
+        assertEquals(thirdParty.getId(),result.getTransactionMakerId());
+        assertNull(result.getUserAccount());
+        assertEquals(new BigDecimal("-100.00"), creditCard1.getBalance().getAmount());
+    }
+
+    @Test
+    public void creditAccount_ThirdPartyToStudentCheckingAccount_accountCredited() {
+        BigDecimal amount = new BigDecimal("1000");
+        operationDTO.setAmount(amount);
+        operationDTO.setAccountSecretKey(studentChecking1.getSecretKey());
+        Transaction transaction = new Transaction(new Money(amount), new Date(), thirdParty);
+        transaction.setCreditedAccount(studentChecking1);
+        when(transactionRepository.save(Mockito.any(Transaction.class))).thenReturn(transaction);
+        TransactionComplete result = accountService.creditAccount(thirdParty.getHashedKey(), studentChecking1.getId(), operationDTO);
+        assertEquals(thirdParty.getId(),result.getTransactionMakerId());
+        assertNull(result.getUserAccount());
+        assertEquals(new BigDecimal("3000.00"), studentChecking1.getBalance().getAmount());
+    }
+
+
+    @Test
+    public void creditAccount_BadHashedKey_ThrowsException() {
+        assertThrows(NoSuchThirdPartyException.class, () -> accountService.creditAccount(UUID.randomUUID(), checking1.getId(), operationDTO));
+    }
+
+    @Test
+    public void creditAccountThirdParty_FrozenAccount_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        operationDTO.setAmount(amount);
+        operationDTO.setAccountSecretKey(checking1.getSecretKey());
+        Transaction transaction = new Transaction(new Money(amount), new Date(), thirdParty);
+        transaction.setCreditedAccount(checking1);
+        checking1.setStatus(AccountStatus.FROZEN);
+        assertThrows(FraudDetectionException.class, () -> accountService.creditAccount(thirdParty.getHashedKey(), checking1.getId(), operationDTO));
+    }
+
+    @Test
+    public void creditAccountThirdParty_PreviousTransaction_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        operationDTO.setAmount(amount);
+        operationDTO.setAccountSecretKey(checking1.getSecretKey());
+        Transaction transaction = new Transaction(new Money(amount), new Date(), thirdParty);
+        transaction.setCreditedAccount(checking1);
+        List<Transaction> previousTransactions = new ArrayList<>();
+        previousTransactions.add(transaction);
+        when(transactionRepository.findTransactionOneSecondAgo(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(previousTransactions);
+        assertThrows(FraudDetectionException.class, () -> accountService.creditAccount(thirdParty.getHashedKey(), checking1.getId(), operationDTO));
+    }
+
+    @Test
+    @WithMockUser(roles = {"ADMIN"})
+    public void creditAccount_ThirdPartyMaxNumberOfOwnerTransactionsNullAndCurrentNumberMax_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        amountDTO.setAmount(amount);
+        Transaction transaction = new Transaction(new Money(amount), new Date(), admin);
+        transaction.setCreditedAccount(checking1);
+        when(transactionRepository.findCurrentDateTransactionCountOfOwner(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(2.0);
+        when(transactionRepository.findHighestTotalTransactionCountOfOwner(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(null);
+        assertThrows(FraudDetectionException.class, () -> accountService.creditAccount(thirdParty.getHashedKey(), checking1.getId(), operationDTO));
+    }
+
+    @Test
+    @WithMockUser(roles = {"ADMIN"})
+    public void creditAccount_ThirdPartyMaxNumberOfOwnerTransactionsSmallerThanCurrentNumber_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        amountDTO.setAmount(amount);
+        Transaction transaction = new Transaction(new Money(amount), new Date(), admin);
+        transaction.setCreditedAccount(checking1);
+
+        when(transactionRepository.findCurrentDateTransactionCountOfOwner(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(4.0);
+        when(transactionRepository.findHighestTotalTransactionCountOfOwner(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(2.0);
+        assertThrows(FraudDetectionException.class, () -> accountService.creditAccount(thirdParty.getHashedKey(), checking1.getId(), operationDTO));
+    }
+
+    @Test
+    @WithMockUser(roles = {"ADMIN"})
+    public void creditAccount_ThirdPartyMaxNumberOfAdminTransactionsNullAndCurrentNumberMax_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        amountDTO.setAmount(amount);
+        Transaction transaction = new Transaction(new Money(amount), new Date(), admin);
+        transaction.setCreditedAccount(checking1);
+        when(transactionRepository.findCurrentDateTransactionCountOfUser(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(2.0);
+        when(transactionRepository.findHighestTotalTransactionCountOfUser(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(null);
+        assertThrows(FraudDetectionException.class, () -> accountService.creditAccount(thirdParty.getHashedKey(), checking1.getId(), operationDTO));
+    }
+
+    @Test
+    @WithMockUser(roles = {"ADMIN"})
+    public void creditAccount_ThirdPartyMaxNumberOfAdminTransactionsSmallerThanCurrentNumber_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        amountDTO.setAmount(amount);
+        Transaction transaction = new Transaction(new Money(amount), new Date(), admin);
+        transaction.setCreditedAccount(checking1);
+        when(transactionRepository.findCurrentDateTransactionCountOfUser(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(4.0);
+        when(transactionRepository.findHighestTotalTransactionCountOfUser(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(2.0);
+        assertThrows(FraudDetectionException.class, () -> accountService.creditAccount(thirdParty.getHashedKey(), checking1.getId(), operationDTO));
+    }
 
     @Test
     @WithMockUser(roles = {"ADMIN"})
@@ -425,7 +684,6 @@ class AccountServiceUnitTest {
         assertEquals(new BigDecimal("1000.00"), studentChecking1.getBalance().getAmount());
     }
 
-
     @Test
     @WithMockUser(roles = {"ADMIN"})
     public void debitAccount_BadUserNameID_ThrowsException() {
@@ -437,4 +695,212 @@ class AccountServiceUnitTest {
     public void debitAccount_NotAuth_ThrowsException() {
         assertThrows(AuthenticationCredentialsNotFoundException.class, () -> accountService.debitAccount(checking1.getId(), accountHolder1, amountDTO));
     }
+
+    @Test
+    @WithMockUser(roles = {"ADMIN"})
+    public void debitAccount_FrozenAccount_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        amountDTO.setAmount(amount);
+        Transaction transaction = new Transaction(new Money(amount), new Date(), admin);
+        checking1.setStatus(AccountStatus.FROZEN);
+        assertThrows(FraudDetectionException.class, () -> accountService.debitAccount(checking1.getId(), admin, amountDTO));
+    }
+
+    @Test
+    @WithMockUser(roles = {"ADMIN"})
+    public void debitAccount_PreviousTransaction_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        amountDTO.setAmount(amount);
+        Transaction transaction = new Transaction(new Money(amount), new Date(), admin);
+        transaction.setCreditedAccount(checking1);
+        List<Transaction> previousTransactions = new ArrayList<>();
+        previousTransactions.add(transaction);
+        when(transactionRepository.findTransactionOneSecondAgo(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(previousTransactions);
+        assertThrows(FraudDetectionException.class, () -> accountService.debitAccount(checking1.getId(), admin, amountDTO));
+    }
+
+    @Test
+    @WithMockUser(roles = {"ADMIN"})
+    public void debitAccount_MaxNumberOfOwnerTransactionsNullAndCurrentNumberMax_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        amountDTO.setAmount(amount);
+        Transaction transaction = new Transaction(new Money(amount), new Date(), admin);
+        transaction.setCreditedAccount(checking1);
+        when(transactionRepository.findCurrentDateTransactionCountOfOwner(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(2.0);
+        when(transactionRepository.findHighestTotalTransactionCountOfOwner(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(null);
+        assertThrows(FraudDetectionException.class, () -> accountService.debitAccount(checking1.getId(), admin, amountDTO));
+    }
+
+    @Test
+    @WithMockUser(roles = {"ADMIN"})
+    public void debitAccount_MaxNumberOfOwnerTransactionsSmallerThanCurrentNumber_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        amountDTO.setAmount(amount);
+        Transaction transaction = new Transaction(new Money(amount), new Date(), admin);
+        transaction.setCreditedAccount(checking1);
+
+        when(transactionRepository.findCurrentDateTransactionCountOfOwner(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(4.0);
+        when(transactionRepository.findHighestTotalTransactionCountOfOwner(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(2.0);
+        assertThrows(FraudDetectionException.class, () -> accountService.debitAccount(checking1.getId(), admin, amountDTO));
+    }
+
+    @Test
+    @WithMockUser(roles = {"ADMIN"})
+    public void debitAccount_MaxNumberOfAdminTransactionsNullAndCurrentNumberMax_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        amountDTO.setAmount(amount);
+        Transaction transaction = new Transaction(new Money(amount), new Date(), admin);
+        transaction.setCreditedAccount(checking1);
+        when(transactionRepository.findCurrentDateTransactionCountOfUser(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(2.0);
+        when(transactionRepository.findHighestTotalTransactionCountOfUser(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(null);
+        assertThrows(FraudDetectionException.class, () -> accountService.debitAccount(checking1.getId(), admin, amountDTO));
+    }
+
+    @Test
+    @WithMockUser(roles = {"ADMIN"})
+    public void debitAccount_MaxNumberOfAdminTransactionsSmallerThanCurrentNumber_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        amountDTO.setAmount(amount);
+        Transaction transaction = new Transaction(new Money(amount), new Date(), admin);
+        transaction.setCreditedAccount(checking1);
+        when(transactionRepository.findCurrentDateTransactionCountOfUser(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(4.0);
+        when(transactionRepository.findHighestTotalTransactionCountOfUser(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(2.0);
+        assertThrows(FraudDetectionException.class, () -> accountService.debitAccount(checking1.getId(), admin, amountDTO));
+    }
+
+    @Test
+    public void debitAccount_ThirdPartyToCheckingAccount_accountCredited() {
+        BigDecimal amount = new BigDecimal("1000");
+        operationDTO.setAmount(amount);
+        operationDTO.setAccountSecretKey(checking1.getSecretKey());
+        Transaction transaction = new Transaction(new Money(amount), new Date(), thirdParty);
+        transaction.setCreditedAccount(checking1);
+        when(transactionRepository.save(Mockito.any(Transaction.class))).thenReturn(transaction);
+        TransactionComplete result = accountService.debitAccount(thirdParty.getHashedKey(), checking1.getId(), operationDTO);
+        assertEquals(thirdParty.getId(),result.getTransactionMakerId());
+        assertNull(result.getUserAccount());
+        assertEquals(new BigDecimal("1000.00"), checking1.getBalance().getAmount());
+    }
+
+
+    @Test
+    public void debitAccount_ThirdPartyToSavingsAccount_accountCredited() {
+        BigDecimal amount = new BigDecimal("1000");
+        operationDTO.setAmount(amount);
+        operationDTO.setAccountSecretKey(savings1.getSecretKey());
+        Transaction transaction = new Transaction(new Money(amount), new Date(), thirdParty);
+        transaction.setCreditedAccount(savings1);
+        when(transactionRepository.save(Mockito.any(Transaction.class))).thenReturn(transaction);
+        TransactionComplete result = accountService.debitAccount(thirdParty.getHashedKey(), savings1.getId(), operationDTO);
+        assertEquals(thirdParty.getId(),result.getTransactionMakerId());
+        assertNull(result.getUserAccount());
+        assertEquals(new BigDecimal("1000.00"), savings1.getBalance().getAmount());
+    }
+
+    @Test
+    public void debitAccount_ThirdPartyToCreditCardAccount_accountCredited() {
+        BigDecimal amount = new BigDecimal("100");
+        operationDTO.setAmount(amount);
+        Transaction transaction = new Transaction(new Money(amount), new Date(), thirdParty);
+        transaction.setCreditedAccount(creditCard1);
+        when(transactionRepository.save(Mockito.any(Transaction.class))).thenReturn(transaction);
+        TransactionComplete result = accountService.debitAccount(thirdParty.getHashedKey(), creditCard1.getId(), operationDTO);
+        assertEquals(thirdParty.getId(),result.getTransactionMakerId());
+        assertNull(result.getUserAccount());
+        assertEquals(new BigDecimal("100.00"), creditCard1.getBalance().getAmount());
+    }
+
+    @Test
+    public void debitAccount_ThirdPartyToStudentCheckingAccount_accountCredited() {
+        BigDecimal amount = new BigDecimal("1000");
+        operationDTO.setAmount(amount);
+        operationDTO.setAccountSecretKey(studentChecking1.getSecretKey());
+        Transaction transaction = new Transaction(new Money(amount), new Date(), thirdParty);
+        transaction.setCreditedAccount(studentChecking1);
+        when(transactionRepository.save(Mockito.any(Transaction.class))).thenReturn(transaction);
+        TransactionComplete result = accountService.debitAccount(thirdParty.getHashedKey(), studentChecking1.getId(), operationDTO);
+        assertEquals(thirdParty.getId(),result.getTransactionMakerId());
+        assertNull(result.getUserAccount());
+        assertEquals(new BigDecimal("1000.00"), studentChecking1.getBalance().getAmount());
+    }
+
+
+    @Test
+    public void debitAccount_BadHashedKey_ThrowsException() {
+        assertThrows(NoSuchThirdPartyException.class, () -> accountService.debitAccount(UUID.randomUUID(), checking1.getId(), operationDTO));
+    }
+
+    @Test
+    public void debitAccountThirdParty_FrozenAccount_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        operationDTO.setAmount(amount);
+        operationDTO.setAccountSecretKey(checking1.getSecretKey());
+        Transaction transaction = new Transaction(new Money(amount), new Date(), thirdParty);
+        transaction.setCreditedAccount(checking1);
+        checking1.setStatus(AccountStatus.FROZEN);
+        assertThrows(FraudDetectionException.class, () -> accountService.debitAccount(thirdParty.getHashedKey(), checking1.getId(), operationDTO));
+    }
+
+    @Test
+    public void debitAccountThirdParty_PreviousTransaction_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        operationDTO.setAmount(amount);
+        operationDTO.setAccountSecretKey(checking1.getSecretKey());
+        Transaction transaction = new Transaction(new Money(amount), new Date(), thirdParty);
+        transaction.setCreditedAccount(checking1);
+        List<Transaction> previousTransactions = new ArrayList<>();
+        previousTransactions.add(transaction);
+        when(transactionRepository.findTransactionOneSecondAgo(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(previousTransactions);
+        assertThrows(FraudDetectionException.class, () -> accountService.debitAccount(thirdParty.getHashedKey(), checking1.getId(), operationDTO));
+    }
+
+    @Test
+    @WithMockUser(roles = {"ADMIN"})
+    public void debitAccount_ThirdPartyMaxNumberOfOwnerTransactionsNullAndCurrentNumberMax_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        amountDTO.setAmount(amount);
+        Transaction transaction = new Transaction(new Money(amount), new Date(), admin);
+        transaction.setCreditedAccount(checking1);
+        when(transactionRepository.findCurrentDateTransactionCountOfOwner(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(2.0);
+        when(transactionRepository.findHighestTotalTransactionCountOfOwner(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(null);
+        assertThrows(FraudDetectionException.class, () -> accountService.debitAccount(thirdParty.getHashedKey(), checking1.getId(), operationDTO));
+    }
+
+    @Test
+    @WithMockUser(roles = {"ADMIN"})
+    public void debitAccount_ThirdPartyMaxNumberOfOwnerTransactionsSmallerThanCurrentNumber_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        amountDTO.setAmount(amount);
+        Transaction transaction = new Transaction(new Money(amount), new Date(), admin);
+        transaction.setCreditedAccount(checking1);
+
+        when(transactionRepository.findCurrentDateTransactionCountOfOwner(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(4.0);
+        when(transactionRepository.findHighestTotalTransactionCountOfOwner(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(2.0);
+        assertThrows(FraudDetectionException.class, () -> accountService.debitAccount(thirdParty.getHashedKey(), checking1.getId(), operationDTO));
+    }
+
+    @Test
+    @WithMockUser(roles = {"ADMIN"})
+    public void debitAccount_ThirdPartyMaxNumberOfAdminTransactionsNullAndCurrentNumberMax_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        amountDTO.setAmount(amount);
+        Transaction transaction = new Transaction(new Money(amount), new Date(), admin);
+        transaction.setCreditedAccount(checking1);
+        when(transactionRepository.findCurrentDateTransactionCountOfUser(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(2.0);
+        when(transactionRepository.findHighestTotalTransactionCountOfUser(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(null);
+        assertThrows(FraudDetectionException.class, () -> accountService.debitAccount(thirdParty.getHashedKey(), checking1.getId(), operationDTO));
+    }
+
+    @Test
+    @WithMockUser(roles = {"ADMIN"})
+    public void debitAccount_ThirdPartyMaxNumberOfAdminTransactionsSmallerThanCurrentNumber_ThrowsException() {
+        BigDecimal amount = new BigDecimal("1000");
+        amountDTO.setAmount(amount);
+        Transaction transaction = new Transaction(new Money(amount), new Date(), admin);
+        transaction.setCreditedAccount(checking1);
+        when(transactionRepository.findCurrentDateTransactionCountOfUser(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(4.0);
+        when(transactionRepository.findHighestTotalTransactionCountOfUser(Mockito.anyLong(), Mockito.any(Date.class))).thenReturn(2.0);
+        assertThrows(FraudDetectionException.class, () -> accountService.debitAccount(thirdParty.getHashedKey(), checking1.getId(), operationDTO));
+    }
+
 }

@@ -21,9 +21,9 @@ public class AccountDTO {
     private BigDecimal interestRate;
 
     public AccountDTO(@NotNull AccountType accountType, @NotNull @PositiveOrZero BigDecimal balance, @Valid @NotNull AccountHolder primaryOwner) {
-        this.accountType = accountType;
-        this.balance = balance;
-        this.primaryOwner = primaryOwner;
+        setAccountType(accountType);
+        setBalance(balance);
+        setPrimaryOwner(primaryOwner);
     }
 
     public AccountType getAccountType() {

@@ -31,7 +31,7 @@ public class TransferDTO {
         return receiverName;
     }
 
-    public void setRecieverName(String receiverName) {
+    public void setReceiverName(String receiverName) {
         this.receiverName = receiverName;
     }
 
@@ -39,7 +39,7 @@ public class TransferDTO {
         return receiverAccountId;
     }
 
-    public void setRecieverAccountId(Long receiverAccountId) {
+    public void setReceiverAccountId(Long receiverAccountId) {
         this.receiverAccountId = receiverAccountId;
     }
 }
