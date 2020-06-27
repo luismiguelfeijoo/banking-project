@@ -9,6 +9,7 @@ import com.ironhack.midterm.model.*;
 import com.ironhack.midterm.repository.*;
 import com.ironhack.midterm.utils.Money;
 import com.ironhack.midterm.view_model.AccountBalance;
+import com.ironhack.midterm.view_model.TransactionComplete;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
@@ -36,8 +37,8 @@ public class AccountService {
     @Autowired
     private ThirdPartyRepository thirdPartyRepository;
 
+    /*
     // change the return to make a balanceViewModel
-
     public Object findById(Long id) {
         Optional<CreditCard> creditCard = creditCardRepository.findById(id);
         if (creditCard.isPresent()) return creditCard.get();
@@ -57,6 +58,12 @@ public class AccountService {
         for (Role role : securedUser.getRoles()) {
             if (role.getRole().equals("ROLE_ADMIN")) return new AccountBalance(account.getBalance());
         }
+        if (account.hasAccess(securedUser.getId())) {
+            return new AccountBalance(account.getBalance());
+        } else {
+            throw new NoPermissionForUserException("You don't have permission");
+        }
+
         if (securedUser.getId().equals(account.getPrimaryOwner().getId())) {
             return new AccountBalance(account.getBalance());
         } else if (account.getSecondaryOwner() != null && securedUser.getId().equals(account.getSecondaryOwner().getId())) {
@@ -65,11 +72,13 @@ public class AccountService {
             throw new NoPermissionForUserException("You don't have permission");
         }
 
+
     }
+    */
 
     @Secured({"ROLE_ADMIN", "ROLE_ACCOUNTHOLDER"})
-    public AccountBalance getBalanceById(Long id, Long userId, SecuredUser securedUser) {
-        Account account = accountRepository.findById(id).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
+    public AccountBalance getBalanceById(Long accountId, SecuredUser securedUser) {
+        Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
         if (account instanceof CreditCard) {
             ((CreditCard) account).applyInterestRate();
         } else if (account instanceof Savings) {
@@ -81,6 +90,12 @@ public class AccountService {
         for (Role role : securedUser.getRoles()) {
             if (role.getRole().equals("ROLE_ADMIN")) return new AccountBalance(account.getBalance());
         }
+        if (account.hasAccess(securedUser.getId())) {
+            return new AccountBalance(account.getBalance());
+        } else {
+            throw new NoPermissionForUserException("You don't have permission");
+        }
+        /*
         if (securedUser.getId().equals(userId) && userId.equals(account.getPrimaryOwner().getId())) {
             return new AccountBalance(account.getBalance());
         } else if (account.getSecondaryOwner() != null && securedUser.getId().equals(account.getSecondaryOwner().getId()) && userId.equals(account.getSecondaryOwner().getId()) ) {
@@ -88,28 +103,33 @@ public class AccountService {
         } else {
             throw new NoPermissionForUserException("You don't have permission");
         }
+         */
     }
 
 
-    public List<AccountBalance> getAllBalanceByUserId(Long userId, SecuredUser securedUser) {
-        List<Account> accounts = accountRepository.findByPrimaryOwnerId(userId);
+    public List<AccountBalance> getAllBalanceByUserId(SecuredUser securedUser) {
+        List<Account> accounts = accountRepository.findByPrimaryOwnerId(securedUser.getId());
         if (accounts.size() == 0) throw new NoSuchAccountException("User doesn't have registered accounts");
         for (Role role : securedUser.getRoles()) {
             if (role.getRole().equals("ROLE_ADMIN")) {
                 return accounts.stream().map(account -> new AccountBalance(account.getBalance())).collect(Collectors.toList());
             }
         }
-        if (securedUser.getId().equals(userId)) {
+        return null;
+        /*
+        if (allowed) {
             return accounts.stream().map(account -> new AccountBalance(account.getBalance())).collect(Collectors.toList());
         } else {
             throw new NoPermissionForUserException("You don't have permission");
         }
+         */
     }
 
     @Secured({"ROLE_ACCOUNTHOLDER"})
     @Transactional(noRollbackFor = {FraudDetectionException.class})
-    public Transaction transfer(Long accountId, Long userId, SecuredUser securedUser, TransferDTO transferDTO) {
+    public TransactionComplete transfer(Long accountId, SecuredUser securedUser, TransferDTO transferDTO) {
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
+        if (!account.hasAccess(securedUser.getId())) throw new NoPermissionForUserException("You don't have permission to do this transfer");
         if (account.getStatus() == AccountStatus.FROZEN) throw new FraudDetectionException("Your account is blocked for fraud inspection purposes, please contact customer service");
         if (transactionRepository.findTransactionOneSecondAgo(accountId, new Date()).size() > 0) {
             account.setStatus(AccountStatus.FROZEN);
@@ -130,7 +150,6 @@ public class AccountService {
                 throw new FraudDetectionException("Possible fraud detected!");
             }
         }
-        if (!account.hasAccess(userId) || !securedUser.getId().equals(userId)) throw new NoPermissionForUserException("You don't have permission to do this transfer");
         Account receiverAccount = accountRepository.findById(transferDTO.getReceiverAccountId()).orElseThrow(() -> new NoSuchAccountException("There's no reciever account with provided ID"));
         if (!receiverAccount.getPrimaryOwner().getName().equals(transferDTO.getReceiverName())) {
             if (receiverAccount.getSecondaryOwner() == null)  {
@@ -162,7 +181,12 @@ public class AccountService {
         }
         receiverAccount.debitAccount(new Money(transferDTO.getAmount()));
         transaction.setCreditedAccount(receiverAccount);
-        return transactionRepository.save(transaction);
+        Transaction doneTransaction = transactionRepository.save(transaction);
+        TransactionComplete response = new TransactionComplete();
+        response.setAmount(transferDTO.getAmount());
+        response.setTransactionMakerName(transactionMaker.getName());
+        response.setUserAccount(new AccountBalance(doneTransaction.getCreditedAccount().getBalance()));
+        return response;
     }
 
     @Secured({"ROLE_ADMIN"})

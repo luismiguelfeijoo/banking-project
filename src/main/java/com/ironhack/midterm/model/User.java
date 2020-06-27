@@ -27,8 +27,8 @@ public class User {
     }
 
     public User(@NotNull @NotEmpty String username, @NotNull @NotEmpty String name) {
-        this.username = username;
-        this.name = name;
+        setUsername(username);
+        setName(name);
     }
 
     public Long getId() {

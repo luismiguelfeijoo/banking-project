@@ -63,9 +63,9 @@ public abstract class Account {
      **/
     public Account(Money balance, AccountHolder primaryOwner) {
         this.balance = balance;
-        this.primaryOwner = primaryOwner;
-        this.secondaryOwner = null;
-        this.lastInterestApplyDate = new Date();
+        setPrimaryOwner(primaryOwner);
+        setSecondaryOwner(null);
+        setLastInterestApplyDate(new Date());
     }
 
     public Long getId() {

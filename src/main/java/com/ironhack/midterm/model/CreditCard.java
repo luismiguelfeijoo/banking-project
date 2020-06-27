@@ -31,8 +31,8 @@ public class CreditCard extends Account {
 
     public CreditCard(AccountHolder primaryOwner, @DecimalMax(value = "100000") @DecimalMin(value = "100") BigDecimal creditLimit, @DecimalMin(value = "0.1") @DecimalMax(value = "0.2") BigDecimal interestRate) {
         super(new Money(new BigDecimal("0")), primaryOwner);
-        this.creditLimit = creditLimit;
-        this.interestRate = interestRate;
+        setCreditLimit(creditLimit);
+        setInterestRate(interestRate);
     }
 
 
