@@ -104,7 +104,7 @@ public class AccountService {
     }
 
     @Secured({"ROLE_ACCOUNTHOLDER"})
-    @Transactional
+    @Transactional(noRollbackFor = {FraudDetectionException.class})
     public Transaction transfer(Long accountId, Long userId, SecuredUser securedUser, TransferDTO transferDTO) {
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
         if (account.getStatus() == AccountStatus.FROZEN) throw new FraudDetectionException("Your account is blocked for fraud inspection purposes, please contact customer service");
@@ -163,7 +163,7 @@ public class AccountService {
     }
 
     @Secured({"ROLE_ADMIN"})
-    @Transactional
+    @Transactional(noRollbackFor = {FraudDetectionException.class})
     public Transaction creditAccount(Long accountId, SecuredUser securedUser, AmountDTO amountDTO) {
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
         User transactionMaker = userRepository.findById(securedUser.getId()).orElseThrow(() -> new NoSuchUserException("There's no user with provided Id"));
@@ -226,7 +226,7 @@ public class AccountService {
         return transactionRepository.save(transaction);
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = {FraudDetectionException.class})
     public Transaction creditAccount(UUID hashedKey, Long accountId, ThirdPartyOperationDTO operationDTO) {
         ThirdParty thirdParty = thirdPartyRepository.findByHashedKey(hashedKey).orElseThrow(() -> new NoSuchThirdPartyException("There's no third-party with provided credentials"));
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
@@ -293,7 +293,7 @@ public class AccountService {
     }
 
     @Secured({"ROLE_ADMIN"})
-    @Transactional
+    @Transactional(noRollbackFor = {FraudDetectionException.class})
     public Transaction debitAccount(Long accountId, SecuredUser securedUser, AmountDTO amountDTO) {
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
         User transactionMaker = userRepository.findById(securedUser.getId()).orElseThrow(() -> new NoSuchUserException("There's no user with provided Id"));
@@ -353,7 +353,7 @@ public class AccountService {
         return transactionRepository.save(transaction);
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = {FraudDetectionException.class})
     public Transaction debitAccount(UUID hashedKey, Long accountId, ThirdPartyOperationDTO operationDTO) {
         User thirdParty = thirdPartyRepository.findByHashedKey(hashedKey).orElseThrow(() -> new NoSuchThirdPartyException("There's no third-party with provided credentials"));
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));

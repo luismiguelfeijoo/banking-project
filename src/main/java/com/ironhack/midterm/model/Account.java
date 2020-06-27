@@ -39,6 +39,7 @@ public abstract class Account {
     @OneToMany(mappedBy = "creditedAccount")
     private List<Transaction> creditTransactions;
 
+    @Enumerated(EnumType.STRING)
     private AccountStatus status = AccountStatus.ACTIVE;
     private Date lastInterestApplyDate;
 

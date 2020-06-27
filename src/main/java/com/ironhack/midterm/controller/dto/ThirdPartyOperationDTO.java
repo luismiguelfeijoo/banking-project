@@ -3,12 +3,13 @@ package com.ironhack.midterm.controller.dto;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
+import java.util.UUID;
 
 public class ThirdPartyOperationDTO {
     @NotNull
     @PositiveOrZero
     private BigDecimal amount;
-    private String accountSecretKey;
+    private UUID accountSecretKey;
 
     public ThirdPartyOperationDTO() {
     }
@@ -21,11 +22,11 @@ public class ThirdPartyOperationDTO {
         this.amount = amount;
     }
 
-    public String getAccountSecretKey() {
+    public UUID getAccountSecretKey() {
         return accountSecretKey;
     }
 
-    public void setAccountSecretKey(String accountSecretKey) {
+    public void setAccountSecretKey(UUID accountSecretKey) {
         this.accountSecretKey = accountSecretKey;
     }
 }

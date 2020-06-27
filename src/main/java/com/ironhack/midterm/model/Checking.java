@@ -4,7 +4,9 @@ import com.ironhack.midterm.exceptions.NegativeAmountException;
 import com.ironhack.midterm.exceptions.NoEnoughBalanceException;
 import com.ironhack.midterm.utils.Hashing;
 import com.ironhack.midterm.utils.Money;
+import org.hibernate.annotations.Type;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
@@ -13,12 +15,15 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.UUID;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 public class Checking extends Account {
-    @NotNull
-    private String secretKey;
+    @Column(unique = true)
+    @Type(type = "uuid-char")
+    private UUID secretKey;
+
     private boolean penaltyCharged = false;
     protected BigDecimal minimumBalance = new BigDecimal("250");
     protected BigDecimal monthlyMaintenanceFee = new BigDecimal("12");
@@ -33,7 +38,8 @@ public class Checking extends Account {
     public Checking(@Valid Money balance, @NotNull AccountHolder primaryOwner) {
         super(balance, primaryOwner);
         Date creationTime = new Date();
-        this.secretKey = Hashing.hash(creationTime.toString());
+        // v4 UUID, the most secured of the easiest ways to create a random UUID
+        this.secretKey = UUID.randomUUID();
     }
 
     public Checking() {
@@ -72,7 +78,7 @@ public class Checking extends Account {
     }
 
 
-    public String getSecretKey() {
+    public UUID getSecretKey() {
         return secretKey;
     }
 
