@@ -3,12 +3,14 @@ package com.ironhack.midterm.model;
 import com.ironhack.midterm.exceptions.NegativeAmountException;
 import com.ironhack.midterm.exceptions.NoEnoughBalanceException;
 import com.ironhack.midterm.utils.Address;
+import com.ironhack.midterm.utils.DateDifference;
 import com.ironhack.midterm.utils.Money;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.Calendar;
+import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -73,6 +75,44 @@ class CheckingTest {
         BigDecimal previousBalance = checking.getBalance().getAmount();
         checking.applyPenaltyFee();
         assertEquals(previousBalance, checking.getBalance().getAmount().add(checking.getPenaltyFee()));
+    }
+
+    @Test
+    public void applyMaintenanceFee_NOTAMonthPassed_NotCharged() {
+        BigDecimal previousBalance = checking.getBalance().getAmount();
+        checking.applyMaintenanceFee();
+        assertEquals(previousBalance, checking.getBalance().getAmount());
+    }
+
+    @Test
+    public void applyMaintenanceFee_AMonthPassed_Charged() {
+        BigDecimal previousBalance = checking.getBalance().getAmount();
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MONTH, -1);
+        checking.setLastMonthlyMaintenanceFeeApplicationDate(calendar.getTime());
+        checking.applyMaintenanceFee();
+        assertEquals(previousBalance.subtract(checking.getMonthlyMaintenanceFee()), checking.getBalance().getAmount());
+    }
+
+    @Test
+    public void applyMaintenanceFee_TWOMonthPassed_Charged() {
+        BigDecimal previousBalance = checking.getBalance().getAmount();
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MONTH, -2);
+        checking.setLastMonthlyMaintenanceFeeApplicationDate(calendar.getTime());
+        checking.applyMaintenanceFee();
+        assertEquals(previousBalance.subtract(checking.getMonthlyMaintenanceFee().multiply(new BigDecimal("2"))), checking.getBalance().getAmount());
+    }
+
+    @Test
+    public void applyMaintenanceFee_TWOANDHALFMonthPassed_Charged() {
+        BigDecimal previousBalance = checking.getBalance().getAmount();
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MONTH, -2);
+        calendar.add(Calendar.DAY_OF_MONTH, -10);
+        checking.setLastMonthlyMaintenanceFeeApplicationDate(calendar.getTime());
+        checking.applyMaintenanceFee();
+        assertEquals(previousBalance.subtract(checking.getMonthlyMaintenanceFee().multiply(new BigDecimal("2"))), checking.getBalance().getAmount());
     }
 
 }

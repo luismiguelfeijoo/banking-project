@@ -2,6 +2,7 @@ package com.ironhack.midterm.model;
 
 import com.ironhack.midterm.exceptions.NegativeAmountException;
 import com.ironhack.midterm.exceptions.NoEnoughBalanceException;
+import com.ironhack.midterm.utils.DateDifference;
 import com.ironhack.midterm.utils.Hashing;
 import com.ironhack.midterm.utils.Money;
 import org.hibernate.annotations.Type;
@@ -14,6 +15,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
@@ -27,6 +30,7 @@ public class Checking extends Account {
     private boolean penaltyCharged = false;
     protected BigDecimal minimumBalance = new BigDecimal("250");
     protected BigDecimal monthlyMaintenanceFee = new BigDecimal("12");
+    private Date lastMonthlyMaintenanceFeeApplicationDate;
 
 
     /*
@@ -40,6 +44,7 @@ public class Checking extends Account {
         Date creationTime = new Date();
         // v4 UUID, the most secured of the easiest ways to create a random UUID
         this.secretKey = UUID.randomUUID();
+        this.lastMonthlyMaintenanceFeeApplicationDate = new Date();
     }
 
     public Checking() {
@@ -77,10 +82,32 @@ public class Checking extends Account {
         }
     }
 
+    public void applyMaintenanceFee() {
+        if (getMonthlyMaintenanceFee().compareTo(BigDecimal.ZERO) > 0) {
+            int months = DateDifference.monthDifference(getLastMonthlyMaintenanceFeeApplicationDate());
+            while (months >= 1) {
+                getBalance().decreaseAmount(this.getMonthlyMaintenanceFee());
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(getLastMonthlyMaintenanceFeeApplicationDate());
+                calendar.add(Calendar.MONTH, 1);
+                setLastInterestApplyDate(calendar.getTime());
+                months--;
+            }
+        }
+    }
 
     public UUID getSecretKey() {
         return secretKey;
     }
+
+    public Date getLastMonthlyMaintenanceFeeApplicationDate() {
+        return lastMonthlyMaintenanceFeeApplicationDate;
+    }
+
+    public void setLastMonthlyMaintenanceFeeApplicationDate(Date lastMonthlyMaintenanceFeeApplicationDate) {
+        this.lastMonthlyMaintenanceFeeApplicationDate = lastMonthlyMaintenanceFeeApplicationDate;
+    }
+
 
     /*
     public void setSecretKey(String secretKey) {

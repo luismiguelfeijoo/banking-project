@@ -74,6 +74,9 @@ public class AccountService {
             ((CreditCard) account).applyInterestRate();
         } else if (account instanceof Savings) {
             ((Savings) account).applyInterestRate();
+            ((Savings) account).applyMaintenanceFee();
+        } else if (account instanceof Checking) {
+            ((Checking) account).applyMaintenanceFee();
         }
         for (Role role : securedUser.getRoles()) {
             if (role.getRole().equals("ROLE_ADMIN")) return new AccountBalance(account.getBalance());
