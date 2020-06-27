@@ -76,7 +76,7 @@ public class AccountService {
     }
     */
 
-    @Secured({"ROLE_ADMIN", "ROLE_ACCOUNTHOLDER"})
+    @Secured({"ROLE_ACCOUNTHOLDER"})
     public AccountBalance getBalanceById(Long accountId, SecuredUser securedUser) {
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
         if (account instanceof CreditCard) {
@@ -87,42 +87,40 @@ public class AccountService {
         } else if (account instanceof Checking) {
             ((Checking) account).applyMaintenanceFee();
         }
-        for (Role role : securedUser.getRoles()) {
-            if (role.getRole().equals("ROLE_ADMIN")) return new AccountBalance(account.getBalance());
-        }
         if (account.hasAccess(securedUser.getId())) {
             return new AccountBalance(account.getBalance());
         } else {
             throw new NoPermissionForUserException("You don't have permission");
         }
-        /*
-        if (securedUser.getId().equals(userId) && userId.equals(account.getPrimaryOwner().getId())) {
-            return new AccountBalance(account.getBalance());
-        } else if (account.getSecondaryOwner() != null && securedUser.getId().equals(account.getSecondaryOwner().getId()) && userId.equals(account.getSecondaryOwner().getId()) ) {
-            return new AccountBalance(account.getBalance());
-        } else {
-            throw new NoPermissionForUserException("You don't have permission");
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    public AccountBalance getBalanceById(Long accountId) {
+        Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
+        if (account instanceof CreditCard) {
+            ((CreditCard) account).applyInterestRate();
+        } else if (account instanceof Savings) {
+            ((Savings) account).applyInterestRate();
+            ((Savings) account).applyMaintenanceFee();
+        } else if (account instanceof Checking) {
+            ((Checking) account).applyMaintenanceFee();
         }
-         */
+        return new AccountBalance(account.getBalance());
     }
 
 
+    @Secured({"ROLE_ACCOUNTHOLDER"})
     public List<AccountBalance> getAllBalanceByUserId(SecuredUser securedUser) {
         List<Account> accounts = accountRepository.findByPrimaryOwnerId(securedUser.getId());
         if (accounts.size() == 0) throw new NoSuchAccountException("User doesn't have registered accounts");
-        for (Role role : securedUser.getRoles()) {
-            if (role.getRole().equals("ROLE_ADMIN")) {
-                return accounts.stream().map(account -> new AccountBalance(account.getBalance())).collect(Collectors.toList());
-            }
-        }
-        return null;
-        /*
-        if (allowed) {
-            return accounts.stream().map(account -> new AccountBalance(account.getBalance())).collect(Collectors.toList());
-        } else {
-            throw new NoPermissionForUserException("You don't have permission");
-        }
-         */
+        return accounts.stream().map(account -> new AccountBalance(account.getBalance())).collect(Collectors.toList());
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    public List<AccountBalance> getAllBalanceByUserId(Long userId) {
+        List<Account> accounts = accountRepository.findByPrimaryOwnerId(userId);
+        if (accounts.size() == 0) throw new NoSuchAccountException("User doesn't have registered accounts");
+        return accounts.stream().map(account -> new AccountBalance(account.getBalance())).collect(Collectors.toList());
     }
 
     @Secured({"ROLE_ACCOUNTHOLDER"})
