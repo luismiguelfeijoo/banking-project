@@ -21,7 +21,7 @@ public class AccountHolderControllerImpl implements AccountHolderController {
     @Override
     //@GetMapping("/account-holders/{id}/accounts") , @PathVariable(name = "id") Long userId
     @GetMapping("/accounts")
-    public List<AccountBalance> getBalance(@AuthenticationPrincipal SecuredUser securedUser) {
+    public List<AccountBalance> getAllBalance(@AuthenticationPrincipal SecuredUser securedUser) {
         return accountService.getAllBalanceByUserId(securedUser);
     }
 
@@ -34,7 +34,7 @@ public class AccountHolderControllerImpl implements AccountHolderController {
 
     @Override
     //@PostMapping("/account-holders/{user-id}/accounts/{account-id}/transfer") , @PathVariable(name = "user-id") Long userId
-    @PostMapping("/account-holders/{user-id}/accounts/{account-id}/transfer")
+    @PostMapping("/accounts/{account-id}/transfer")
     public TransactionComplete transferMoney(@AuthenticationPrincipal SecuredUser securedUser, @PathVariable(name = "account-id") Long accountId, @RequestBody TransferDTO transferDTO) {
         return accountService.transfer(accountId, securedUser, transferDTO);
     }

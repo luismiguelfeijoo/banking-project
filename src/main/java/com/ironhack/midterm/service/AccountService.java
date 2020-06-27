@@ -111,7 +111,7 @@ public class AccountService {
     @Secured({"ROLE_ACCOUNTHOLDER"})
     public List<AccountBalance> getAllBalanceByUserId(SecuredUser securedUser) {
         List<Account> accounts = accountRepository.findByPrimaryOwnerId(securedUser.getId());
-        if (accounts.size() == 0) throw new NoSuchAccountException("User doesn't have registered accounts");
+        //if (accounts.size() == 0) throw new NoSuchAccountException("User doesn't have registered accounts");
         return accounts.stream().map(account -> new AccountBalance(account.getBalance())).collect(Collectors.toList());
     }
 

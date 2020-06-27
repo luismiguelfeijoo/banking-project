@@ -171,7 +171,9 @@ class AccountServiceUnitTest {
     @Test
     @WithMockUser(roles = {"ACCOUNTHOLDER"})
     public void getAllBalanceByUserId_NoAccounts_ThrowException() {
-        assertThrows(NoSuchAccountException.class, () -> accountService.getAllBalanceByUserId(accountHolder2) );
+        List<AccountBalance> results = accountService.getAllBalanceByUserId(new AccountHolder());
+        assertEquals(0, results.size());
+        //assertThrows(NoSuchAccountException.class, () -> accountService.getAllBalanceByUserId(accountHolder2) );
     }
 
     @Test

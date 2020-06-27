@@ -51,7 +51,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NoPermissionForUserException.class)
     public void noPermissionForUserExceptionHandler(NoPermissionForUserException noPermissionForUserException, HttpServletResponse response) throws IOException {
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, noPermissionForUserException.getMessage());
+        response.sendError(HttpServletResponse.SC_FORBIDDEN, noPermissionForUserException.getMessage());
     }
 
     @ExceptionHandler(NoSuchUserException.class)
@@ -61,7 +61,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NoSuchThirdPartyException.class)
     public void noSuchThirdPartyExceptionHandler(NoSuchThirdPartyException noSuchThirdPartyException, HttpServletResponse response) throws IOException {
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, noSuchThirdPartyException.getMessage());
+        response.sendError(HttpServletResponse.SC_FORBIDDEN, noSuchThirdPartyException.getMessage());
     }
     @ExceptionHandler(FraudDetectionException.class)
     public void fraudDetectionExceptionHanlder(FraudDetectionException fraudDetectionException, HttpServletResponse response) throws IOException {

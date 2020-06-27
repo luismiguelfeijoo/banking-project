@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.List;
 
 public interface AccountHolderController {
-    public List<AccountBalance> getBalance(SecuredUser securedUser);
+    public List<AccountBalance> getAllBalance(SecuredUser securedUser);
     public AccountBalance getBalance(SecuredUser securedUser, Long accountId);
     public TransactionComplete transferMoney(SecuredUser securedUser, Long accountId, TransferDTO transferDTO);
 }

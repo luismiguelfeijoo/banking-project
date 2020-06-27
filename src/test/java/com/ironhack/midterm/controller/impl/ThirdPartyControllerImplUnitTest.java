@@ -42,6 +42,7 @@ class ThirdPartyControllerImplUnitTest {
     @MockBean
     private AccountService accountService;
     private MockMvc mockMvc;
+    ObjectMapper mapper = new ObjectMapper();
 
     ThirdParty thirdParty;
     Checking checking;
@@ -49,7 +50,7 @@ class ThirdPartyControllerImplUnitTest {
     ThirdPartyOperationDTO operationDTO;
     TransactionComplete transactionComplete = new TransactionComplete();
     BigDecimal amount;
-    ObjectMapper mapper = new ObjectMapper();
+
 
     @BeforeEach
     public void setUp() {
@@ -89,7 +90,7 @@ class ThirdPartyControllerImplUnitTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Hashed-Key", UUID.randomUUID())
                 .content(mapper.writeValueAsString(operationDTO)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -119,7 +120,7 @@ class ThirdPartyControllerImplUnitTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Hashed-Key", UUID.randomUUID())
                 .content(mapper.writeValueAsString(operationDTO)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
