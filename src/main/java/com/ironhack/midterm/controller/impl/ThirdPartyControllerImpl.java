@@ -4,6 +4,7 @@ import com.ironhack.midterm.controller.dto.ThirdPartyOperationDTO;
 import com.ironhack.midterm.controller.interfaces.ThirdPartyController;
 import com.ironhack.midterm.model.Transaction;
 import com.ironhack.midterm.service.AccountService;
+import com.ironhack.midterm.view_model.TransactionComplete;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,13 +18,13 @@ public class ThirdPartyControllerImpl implements ThirdPartyController {
 
     @Override
     @PutMapping("/third-party/accounts/{account-id}/debit")
-    public Transaction debitAccount(@RequestHeader("Hashed-Key")  UUID hashedKey, @PathVariable(name = "account-id") Long accountId, @Valid @RequestBody ThirdPartyOperationDTO thirdPartyOperationDTO) {
+    public TransactionComplete debitAccount(@RequestHeader("Hashed-Key")  UUID hashedKey, @PathVariable(name = "account-id") Long accountId, @Valid @RequestBody ThirdPartyOperationDTO thirdPartyOperationDTO) {
         return accountService.debitAccount(hashedKey, accountId, thirdPartyOperationDTO);
     }
 
     @Override
     @PutMapping("/third-party/accounts/{account-id}/credit")
-    public Transaction creditAccount(@RequestHeader("Hashed-Key") UUID hashedKey, @PathVariable(name = "account-id") Long accountId, @Valid @RequestBody ThirdPartyOperationDTO thirdPartyOperationDTO) {
+    public TransactionComplete creditAccount(@RequestHeader("Hashed-Key") UUID hashedKey, @PathVariable(name = "account-id") Long accountId, @Valid @RequestBody ThirdPartyOperationDTO thirdPartyOperationDTO) {
         return accountService.creditAccount(hashedKey, accountId, thirdPartyOperationDTO);
     }
 }

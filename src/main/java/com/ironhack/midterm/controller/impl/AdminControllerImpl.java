@@ -8,6 +8,7 @@ import com.ironhack.midterm.enums.AccountType;
 import com.ironhack.midterm.model.*;
 import com.ironhack.midterm.service.*;
 import com.ironhack.midterm.utils.DateDifference;
+import com.ironhack.midterm.view_model.TransactionComplete;
 import org.joda.time.Years;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -90,13 +91,13 @@ public class AdminControllerImpl implements AdminController {
 
     @Override
     @PutMapping("/admin/accounts/{account-id}/debit")
-    public Transaction debitAccount(@AuthenticationPrincipal SecuredUser securedUser, @PathVariable(name = "account-id") Long accountId, @Valid @RequestBody AmountDTO amountDTO) {
+    public TransactionComplete debitAccount(@AuthenticationPrincipal SecuredUser securedUser, @PathVariable(name = "account-id") Long accountId, @Valid @RequestBody AmountDTO amountDTO) {
         return accountService.debitAccount(accountId, securedUser, amountDTO);
     }
 
     @Override
     @PutMapping("/admin/accounts/{account-id}/credit")
-    public Transaction creditAccount(@AuthenticationPrincipal SecuredUser securedUser, @PathVariable(name = "account-id") Long accountId, @Valid @RequestBody AmountDTO amountDTO) {
+    public TransactionComplete creditAccount(@AuthenticationPrincipal SecuredUser securedUser, @PathVariable(name = "account-id") Long accountId, @Valid @RequestBody AmountDTO amountDTO) {
         return accountService.creditAccount(accountId, securedUser, amountDTO);
     }
 }

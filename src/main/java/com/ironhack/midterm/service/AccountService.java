@@ -108,7 +108,6 @@ public class AccountService {
         return new AccountBalance(account.getBalance());
     }
 
-
     @Secured({"ROLE_ACCOUNTHOLDER"})
     public List<AccountBalance> getAllBalanceByUserId(SecuredUser securedUser) {
         List<Account> accounts = accountRepository.findByPrimaryOwnerId(securedUser.getId());
@@ -160,36 +159,36 @@ public class AccountService {
         Transaction transaction = new Transaction(new Money(transferDTO.getAmount()), new Date(), transactionMaker);
         if (account instanceof CreditCard) {
             CreditCard creditCard = (CreditCard) account;
-            creditCard.creditAccount(new Money(transferDTO.getAmount()));
+            creditCard.debitAccount(new Money(transferDTO.getAmount()));
             transaction.setDebitedAccount(creditCard);
         } else if (account instanceof Savings) {
             Savings savings = (Savings) account;
-            savings.creditAccount(new Money(transferDTO.getAmount()));
+            savings.debitAccount(new Money(transferDTO.getAmount()));
             savings.applyPenaltyFee();
             transaction.setDebitedAccount(savings);
         } else if (account instanceof StudentChecking) {
             StudentChecking studentChecking = (StudentChecking) account;
-            studentChecking.creditAccount(new Money(transferDTO.getAmount()));
+            studentChecking.debitAccount(new Money(transferDTO.getAmount()));
             transaction.setDebitedAccount(studentChecking);
         } else if (account instanceof Checking) {
             Checking checking = (Checking) account;
-            checking.creditAccount(new Money(transferDTO.getAmount()));
+            checking.debitAccount(new Money(transferDTO.getAmount()));
             checking.applyPenaltyFee();
             transaction.setDebitedAccount(checking);
         }
-        receiverAccount.debitAccount(new Money(transferDTO.getAmount()));
+        receiverAccount.creditAccount(new Money(transferDTO.getAmount()));
         transaction.setCreditedAccount(receiverAccount);
         Transaction doneTransaction = transactionRepository.save(transaction);
         TransactionComplete response = new TransactionComplete();
         response.setAmount(transferDTO.getAmount());
-        response.setTransactionMakerName(transactionMaker.getName());
-        response.setUserAccount(new AccountBalance(doneTransaction.getCreditedAccount().getBalance()));
+        response.setTransactionMakerId(transactionMaker.getId());
+        response.setUserAccount(new AccountBalance(doneTransaction.getDebitedAccount().getBalance()));
         return response;
     }
 
     @Secured({"ROLE_ADMIN"})
     @Transactional(noRollbackFor = {FraudDetectionException.class})
-    public Transaction creditAccount(Long accountId, SecuredUser securedUser, AmountDTO amountDTO) {
+    public TransactionComplete creditAccount(Long accountId, SecuredUser securedUser, AmountDTO amountDTO) {
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
         User transactionMaker = userRepository.findById(securedUser.getId()).orElseThrow(() -> new NoSuchUserException("There's no user with provided Id"));
         if (account.getStatus() == AccountStatus.FROZEN) throw new FraudDetectionException("Your account is blocked for fraud inspection purposes, please contact customer service");
@@ -248,11 +247,16 @@ public class AccountService {
             checking.applyPenaltyFee();
             transaction.setCreditedAccount(checking);
         }
-        return transactionRepository.save(transaction);
+        Transaction doneTransaction = transactionRepository.save(transaction);
+        TransactionComplete response = new TransactionComplete();
+        response.setAmount(amountDTO.getAmount());
+        response.setTransactionMakerId(transactionMaker.getId());
+        response.setUserAccount(new AccountBalance(doneTransaction.getCreditedAccount().getBalance()));
+        return response;
     }
 
     @Transactional(noRollbackFor = {FraudDetectionException.class})
-    public Transaction creditAccount(UUID hashedKey, Long accountId, ThirdPartyOperationDTO operationDTO) {
+    public TransactionComplete creditAccount(UUID hashedKey, Long accountId, ThirdPartyOperationDTO operationDTO) {
         ThirdParty thirdParty = thirdPartyRepository.findByHashedKey(hashedKey).orElseThrow(() -> new NoSuchThirdPartyException("There's no third-party with provided credentials"));
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
         if (account.getStatus() == AccountStatus.FROZEN) throw new FraudDetectionException("Your account is blocked for fraud inspection purposes, please contact customer service");
@@ -314,12 +318,18 @@ public class AccountService {
             checking.applyPenaltyFee();
             transaction.setCreditedAccount(checking);
         }
-        return transactionRepository.save(transaction);
+        Transaction doneTransaction = transactionRepository.save(transaction);
+        TransactionComplete response = new TransactionComplete();
+        response.setAmount(operationDTO.getAmount());
+        response.setTransactionMakerId(thirdParty.getId());
+        // Not shown for not giving info to third party
+        //response.setUserAccount(new AccountBalance(transaction.getCreditedAccount().getBalance()));
+        return response;
     }
 
     @Secured({"ROLE_ADMIN"})
     @Transactional(noRollbackFor = {FraudDetectionException.class})
-    public Transaction debitAccount(Long accountId, SecuredUser securedUser, AmountDTO amountDTO) {
+    public TransactionComplete debitAccount(Long accountId, SecuredUser securedUser, AmountDTO amountDTO) {
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
         User transactionMaker = userRepository.findById(securedUser.getId()).orElseThrow(() -> new NoSuchUserException("There's no user with provided Id"));
         if (account.getStatus() == AccountStatus.FROZEN) throw new FraudDetectionException("Your account is blocked for fraud inspection purposes, please contact customer service");
@@ -375,11 +385,16 @@ public class AccountService {
             checking.debitAccount(new Money(amountDTO.getAmount()));
             transaction.setDebitedAccount(checking);
         }
-        return transactionRepository.save(transaction);
+        Transaction doneTransaction = transactionRepository.save(transaction);
+        TransactionComplete response = new TransactionComplete();
+        response.setAmount(amountDTO.getAmount());
+        response.setTransactionMakerId(transactionMaker.getId());
+        response.setUserAccount(new AccountBalance(doneTransaction.getDebitedAccount().getBalance()));
+        return response;
     }
 
     @Transactional(noRollbackFor = {FraudDetectionException.class})
-    public Transaction debitAccount(UUID hashedKey, Long accountId, ThirdPartyOperationDTO operationDTO) {
+    public TransactionComplete debitAccount(UUID hashedKey, Long accountId, ThirdPartyOperationDTO operationDTO) {
         User thirdParty = thirdPartyRepository.findByHashedKey(hashedKey).orElseThrow(() -> new NoSuchThirdPartyException("There's no third-party with provided credentials"));
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
         if (account.getStatus() == AccountStatus.FROZEN) throw new FraudDetectionException("Your account is blocked for fraud inspection purposes, please contact customer service");
@@ -440,7 +455,11 @@ public class AccountService {
             checking.applyPenaltyFee();
             transaction.setDebitedAccount(checking);
         }
-        return transactionRepository.save(transaction);
+        Transaction doneTransaction = transactionRepository.save(transaction);
+        TransactionComplete response = new TransactionComplete();
+        response.setAmount(operationDTO.getAmount());
+        response.setTransactionMakerId(thirdParty.getId());
+        return response;
     }
 
 

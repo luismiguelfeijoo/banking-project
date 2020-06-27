@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 public class TransactionComplete {
     private BigDecimal amount;
     private AccountBalance userAccount;
-    private String transactionMakerName;
+    private Long transactionMakerId;
 
     public BigDecimal getAmount() {
         return amount;
@@ -26,11 +26,11 @@ public class TransactionComplete {
         this.userAccount = userAccount;
     }
 
-    public String getTransactionMakerName() {
-        return transactionMakerName;
+    public Long getTransactionMakerId() {
+        return transactionMakerId;
     }
 
-    public void setTransactionMakerName(String transactionMakerName) {
-        this.transactionMakerName = transactionMakerName;
+    public void setTransactionMakerId(Long transactionMakerId) {
+        this.transactionMakerId = transactionMakerId;
     }
 }
