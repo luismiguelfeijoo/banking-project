@@ -19,6 +19,7 @@ public class GlobalExceptionHandler {
         response.sendError(HttpServletResponse.SC_CONFLICT, noEnoughBalanceException.getMessage());
     }
 
+    // not currently used
     @ExceptionHandler(NegativeAmountException.class)
     public void negativeAmountExceptionHandler(NegativeAmountException negativeAmountException, HttpServletResponse response) throws IOException {
         response.sendError(HttpServletResponse.SC_CONFLICT, negativeAmountException.getMessage());

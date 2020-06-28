@@ -25,9 +25,9 @@ public class Transaction {
     private User transactionMaker;
 
     public Transaction(@NotNull Money amount, @NotNull Date date, @NotNull User transactionMaker) {
-        this.amount = amount;
-        this.date = date;
-        this.transactionMaker = transactionMaker;
+        setAmount(amount);
+        setDate(date);
+        setTransactionMaker(transactionMaker);
     }
 
     public Transaction() {
