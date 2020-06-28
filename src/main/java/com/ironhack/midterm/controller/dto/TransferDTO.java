@@ -35,6 +35,8 @@ public class TransferDTO {
         this.receiverName = receiverName;
     }
 
+    
+
     public Long getReceiverAccountId() {
         return receiverAccountId;
     }
