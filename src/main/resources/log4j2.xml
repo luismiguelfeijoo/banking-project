@@ -2,12 +2,14 @@
 <Configuration>
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout
-                    pattern="%style{%d{ISO8601}}{black} %highlight{%-5level }[%style{%t}{bright,blue}] %style{%C{1.}}{bright,yellow}: %msg%n%throwable" />
+            <PatternLayout pattern="%d{${LOG_DATEFORMAT_PATTERN:-yyyy-MM-dd HH:mm:ss.SSS}} %highlight{${LOG_LEVEL_PATTERN:-%5p}}{FATAL=red blink, ERROR=red, WARN=yellow bold, INFO=green, DEBUG=green bold, TRACE=blue} %style{${sys:PID}}{magenta} [%15.15t] %style{%-40.40C{1.}}{cyan} : %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"/>
         </Console>
-        <!--<NoSql name="databaseAppender">
-            <MongoDb databaseName="logs" collectionName="log_lab46" server="127.0.0.1" port="27017" />
-        </NoSql> -->
+        <NoSql name="databaseAppenderForAudits">
+            <MongoDb databaseName="banking_project" collectionName="auditing" server="127.0.0.1" port="27017" />
+        </NoSql>
+        <NoSql name="databaseAppender">
+            <MongoDb databaseName="banking_project" collectionName="app_logs" server="127.0.0.1" port="27017" />
+        </NoSql>
         <File name="MyFile" fileName="logs/app.log">
             <PatternLayout>
                 <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
@@ -22,10 +24,16 @@
         <!-- LOG everything at INFO level -->
         <logger name="com.ironhack.midterm" level="info">
             <AppenderRef ref="Async" />
-            <!-- <AppenderRef ref="databaseAppender" /> -->
+        </logger>
+        <logger name="com.ironhack.midterm.service" level="info">
+            <AppenderRef ref="databaseAppenderForAudits" />
+        </logger>
+        <logger name="com.ironhack.midterm.controller" level="info">
+            <AppenderRef ref="databaseAppenderForAudits" />
         </logger>
         <Root level="info">
             <AppenderRef ref="Console" />
+            <AppenderRef ref="databaseAppender" />
         </Root>
     </Loggers>
 </Configuration>
