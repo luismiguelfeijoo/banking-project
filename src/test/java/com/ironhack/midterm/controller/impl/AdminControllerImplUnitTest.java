@@ -4,7 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ironhack.midterm.controller.dto.AccountDTO;
 import com.ironhack.midterm.controller.dto.AmountDTO;
 import com.ironhack.midterm.controller.dto.ThirdPartyDTO;
+import com.ironhack.midterm.enums.AccountType;
+import com.ironhack.midterm.exceptions.NoSuchAccountException;
 import com.ironhack.midterm.exceptions.NoSuchAccountHolderException;
+import com.ironhack.midterm.exceptions.NoSuchUserException;
 import com.ironhack.midterm.model.*;
 import com.ironhack.midterm.security.CustomSecurityUser;
 import com.ironhack.midterm.service.*;
@@ -37,6 +40,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -68,6 +72,8 @@ class AdminControllerImplUnitTest {
     Checking checking;
     BigDecimal amount;
     TransactionComplete transactionComplete = new TransactionComplete();
+    AccountDTO accountDTO;
+    AmountDTO amountDTO = new AmountDTO();
 
     @BeforeEach
     public void setUp() {
@@ -83,9 +89,9 @@ class AdminControllerImplUnitTest {
         Set<Role> roles = securedUser.getRoles();
         roles.add(role);
         securedUser.setRoles(roles);
-
-
         user = new CustomSecurityUser(securedUser);
+        user.setId((long) 9);
+        accountDTO = new AccountDTO(AccountType.CHECKING, new BigDecimal("2000"), accountHolder);
         checking = new Checking(new Money(new BigDecimal("2000.00")), accountHolder);
         checking.setId((long) 1);
         amount = new BigDecimal("100");
@@ -94,8 +100,46 @@ class AdminControllerImplUnitTest {
     }
 
     @Test
-    public void createAccount() {
+    public void createAccount_checkingAccount_AccountCreated() throws Exception {
+        when(checkingService.create(Mockito.any(AccountDTO.class))).thenReturn(checking);
+        mockMvc.perform(post("/admin/accounts").with(user(user))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(accountDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").value("1"))
+                .andExpect(jsonPath("balance.amount").value("2000.0"))
+                .andExpect(jsonPath("primaryOwner.id").value("1"));
+    }
 
+    @Test
+    public void createAccount_savingsAccount_AccountCreated() throws Exception {
+        accountDTO.setAccountType(AccountType.SAVINGS);
+        Savings savings = new Savings(new Money(new BigDecimal("2000.00")), accountHolder);
+        savings.setId((long) 2);
+        when(savingsService.create(Mockito.any(AccountDTO.class))).thenReturn(savings);
+        mockMvc.perform(post("/admin/accounts").with(user(user))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(accountDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").value("2"))
+                .andExpect(jsonPath("balance.amount").value("2000.0"))
+                .andExpect(jsonPath("primaryOwner.id").value("1"));
+    }
+
+    @Test
+    public void createAccount_creditAccount_AccountCreated() throws Exception {
+        accountDTO.setAccountType(AccountType.CREDITCARD);
+        accountDTO.setBalance(BigDecimal.ZERO);
+        CreditCard creditCard = new CreditCard(accountHolder);
+        creditCard.setId((long) 3);
+        when(creditCardService.create(Mockito.any(AccountDTO.class))).thenReturn(creditCard);
+        mockMvc.perform(post("/admin/accounts").with(user(user))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(accountDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").value("3"))
+                .andExpect(jsonPath("balance.amount").value("0.0"))
+                .andExpect(jsonPath("primaryOwner.id").value("1"));
     }
 
     @Test
@@ -192,7 +236,58 @@ class AdminControllerImplUnitTest {
                 .andExpect(status().isNotFound());
     }
 
-    public void debitAccount() {}
-    public void creditAccount() {}
+    @Test
+    public void debitAccount_CompleteRequest_TransactionComplete() throws Exception {
+        amountDTO.setAmount(new BigDecimal("100.00"));
+        transactionComplete.setTransactionMakerId(user.getId());
+        checking.debitAccount(new Money(amountDTO.getAmount()));
+        transactionComplete.setUserAccount(new AccountBalance(checking.getBalance()));
+        when(accountService.debitAccount(Mockito.anyLong(), Mockito.any(SecuredUser.class), Mockito.any(AmountDTO.class))).thenReturn(transactionComplete);
+        mockMvc.perform(put("/admin/accounts/1/debit").with(user(user))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(amountDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("amount").value("100"))
+                .andExpect(jsonPath("userAccount.balance.amount").value("1900.0"))
+                .andExpect(jsonPath("transactionMakerId").value("9"));
+    }
+
+    @Test
+    public void debitAccount_NoUser_NotFound() throws Exception {
+        amountDTO.setAmount(new BigDecimal("100.00"));
+        when(accountService.debitAccount(Mockito.anyLong(), Mockito.any(SecuredUser.class), Mockito.any(AmountDTO.class))).thenThrow(NoSuchUserException.class);
+        mockMvc.perform(put("/admin/accounts/1/debit").with(user(user))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(amountDTO)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void debitAccount_NoAccountId_NotFound() throws Exception {
+        amountDTO.setAmount(new BigDecimal("100.00"));
+        when(accountService.debitAccount(Mockito.anyLong(), Mockito.any(SecuredUser.class), Mockito.any(AmountDTO.class))).thenThrow(NoSuchAccountException.class);
+        mockMvc.perform(put("/admin/accounts/1/debit").with(user(user))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(amountDTO)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void creditAccount_CompleteRequest_TransactionComplete() throws Exception {
+        amountDTO.setAmount(new BigDecimal("100.00"));
+        transactionComplete.setTransactionMakerId(user.getId());
+        checking.creditAccount(new Money(amountDTO.getAmount()));
+        transactionComplete.setUserAccount(new AccountBalance(checking.getBalance()));
+        when(accountService.creditAccount(Mockito.anyLong(), Mockito.any(SecuredUser.class), Mockito.any(AmountDTO.class))).thenReturn(transactionComplete);
+        mockMvc.perform(put("/admin/accounts/1/credit").with(user(user))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(amountDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("amount").value("100"))
+                .andExpect(jsonPath("userAccount.balance.amount").value("2100.0"))
+                .andExpect(jsonPath("transactionMakerId").value("9"));
+    }
+
+
 
 }
