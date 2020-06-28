@@ -5,6 +5,7 @@ import com.ironhack.midterm.controller.dto.AccountDTO;
 import com.ironhack.midterm.controller.dto.AmountDTO;
 import com.ironhack.midterm.controller.dto.ThirdPartyDTO;
 import com.ironhack.midterm.enums.AccountType;
+import com.ironhack.midterm.exceptions.DuplicatedUsernameException;
 import com.ironhack.midterm.exceptions.NoSuchAccountException;
 import com.ironhack.midterm.exceptions.NoSuchAccountHolderException;
 import com.ironhack.midterm.exceptions.NoSuchUserException;
@@ -177,6 +178,20 @@ class AdminControllerImplUnitTest {
                 .andExpect(jsonPath("username").value("tp"))
                 .andExpect(jsonPath("id").value("1"))
                 .andExpect(jsonPath("hashedKey").value(thirdParty.getHashedKey()));
+    }
+
+    @Test
+    public void addThirdParty_RepeatedUsername_Conflict() throws Exception {
+        ThirdPartyDTO thirdPartyDTO = new ThirdPartyDTO("third-party", "tp");
+        ThirdParty thirdParty = new ThirdParty();
+        thirdParty.setId((long) 1);
+        thirdParty.setName(thirdPartyDTO.getName());
+        thirdParty.setUsername(thirdPartyDTO.getUsername());
+        when(thirdPartyService.create(Mockito.any(ThirdPartyDTO.class))).thenThrow(DuplicatedUsernameException.class);
+        mockMvc.perform(post("/admin/third-party").with(user(user))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(thirdPartyDTO)))
+                .andExpect(status().isConflict());
     }
 
     @Test

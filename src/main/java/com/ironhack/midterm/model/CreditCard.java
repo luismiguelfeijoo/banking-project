@@ -4,6 +4,8 @@ import com.ironhack.midterm.exceptions.NegativeAmountException;
 import com.ironhack.midterm.exceptions.NoEnoughBalanceException;
 import com.ironhack.midterm.utils.DateDifference;
 import com.ironhack.midterm.utils.Money;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.persistence.Entity;
 import javax.validation.constraints.DecimalMax;
@@ -25,6 +27,7 @@ public class CreditCard extends Account {
     @DecimalMax(value = "0.2")
     private BigDecimal interestRate = new BigDecimal("0.2");
 
+    private final static Logger LOGGER = LogManager.getLogger(CreditCard.class);
 
     public CreditCard() {
     }
@@ -65,17 +68,23 @@ public class CreditCard extends Account {
 
     @Override
     public void debitAccount(@PositiveOrZero Money amount) {
+        LOGGER.info("[CREDIT ACCOUNT INIT] - AccountId:" + getId() + " - AccountBalance:" + getBalance() + " - AmountToDebit:" + amount.getAmount());
         if (amount.getAmount().compareTo(BigDecimal.ZERO) < 0) throw new NegativeAmountException("The amount must be positive");
         if (this.getCreditLimit().compareTo(amount.getAmount().add(getBalance().getAmount())) >= 0) {
+            LOGGER.info("[CREDITING ACCOUNT] - AccountId:" + getId() + " - AccountBalance:" + getBalance() + " - AmountToDebit:" + amount.getAmount());
             getBalance().increaseAmount(amount);
+            LOGGER.info("[CREDITING ACCOUNT] - AccountId:" + getId() + " - AccountBalance:" + getBalance() + " - AmountDebited:" + amount.getAmount());
         } else {
+            LOGGER.info("[CREDIT ACCOUNT REJECTED] Message: Not enough credit limit - AccountId:" + getId() + " - AccountBalance:" + getBalance() + " - AmountToDebit:" + amount.getAmount());
             throw new NoEnoughBalanceException("There's not enough credit limit to do the transaction");
         }
     }
 
     public void applyInterestRate() {
+        LOGGER.info("[CHECKING FOR INTEREST RATE] - AccountId:" + getId() + " - AccountBalance:" + getBalance() + "lastDateOfCharge:" + getLastInterestApplyDate() + "interestRate:" + getInterestRate());
         int months = DateDifference.monthDifference(getLastInterestApplyDate());
         while (months >= 1) {
+            LOGGER.info("[APPLYING INTEREST RATE] - AccountId:" + getId() + " - AccountBalance:" + getBalance() + "lastDateOfCharge:" + getLastInterestApplyDate() + "interestRate:" + getInterestRate());
             getBalance().increaseByRate(BigDecimal.ONE.multiply(getInterestRate().divide(new BigDecimal("12"), 4, RoundingMode.HALF_EVEN)));
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(getLastInterestApplyDate());

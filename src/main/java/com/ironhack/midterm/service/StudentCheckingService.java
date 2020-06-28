@@ -12,6 +12,8 @@ import com.ironhack.midterm.repository.AccountHolderRepository;
 import com.ironhack.midterm.repository.StudentCheckingRepository;
 import com.ironhack.midterm.utils.DateDifference;
 import com.ironhack.midterm.utils.Money;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
@@ -23,8 +25,11 @@ public class StudentCheckingService {
     @Autowired
     private AccountHolderService accountHolderService;
 
+    private final static Logger LOGGER = LogManager.getLogger(StudentCheckingService.class);
+
     @Secured({"ROLE_ADMIN"})
     public StudentChecking create(AccountDTO accountDTO) {
+        LOGGER.info("[CREATE STUDENT CHECKING ACCOUNT (admin)]");
         StudentChecking studentChecking = null;
         AccountHolder primaryOwner = null;
         AccountHolder secondaryOwner = null;

@@ -8,6 +8,8 @@ import com.ironhack.midterm.model.CreditCard;
 import com.ironhack.midterm.model.Savings;
 import com.ironhack.midterm.repository.SavingsRepository;
 import com.ironhack.midterm.utils.Money;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
@@ -19,8 +21,12 @@ public class SavingsService {
     @Autowired
     private AccountHolderService accountHolderService;
 
+    private final static Logger LOGGER = LogManager.getLogger(SavingsService.class);
+
+
     @Secured({"ROLE_ADMIN"})
     public Savings create(AccountDTO accountDTO) {
+        LOGGER.info("[CREATE SAVINGS ACCOUNT (admin)]");
         AccountHolder primaryOwner = null;
         AccountHolder secondaryOwner = null;
         Savings savings = null;

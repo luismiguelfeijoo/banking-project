@@ -9,6 +9,8 @@ import com.ironhack.midterm.model.StudentChecking;
 import com.ironhack.midterm.repository.CheckingRepository;
 import com.ironhack.midterm.utils.DateDifference;
 import com.ironhack.midterm.utils.Money;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
@@ -24,9 +26,13 @@ public class CheckingService {
     @Autowired
     private StudentCheckingService studentCheckingService;
 
+    private final static Logger LOGGER = LogManager.getLogger(CheckingService.class);
+
+
     // ¿Maybe transactional?
     @Secured({"ROLE_ADMIN"})
     public Checking create(AccountDTO accountDTO) {
+        LOGGER.info("[CREATE CHECKING ACCOUNT (admin)]");
         AccountHolder primaryOwner = null;
         AccountHolder secondaryOwner = null;
         Checking checking = null;

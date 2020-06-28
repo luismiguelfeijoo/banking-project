@@ -1,6 +1,7 @@
 package com.ironhack.midterm.service;
 
 import com.ironhack.midterm.controller.dto.ThirdPartyDTO;
+import com.ironhack.midterm.exceptions.DuplicatedUsernameException;
 import com.ironhack.midterm.model.ThirdParty;
 import com.ironhack.midterm.repository.ThirdPartyRepository;
 import com.ironhack.midterm.utils.Hashing;
@@ -10,6 +11,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.test.context.support.WithMockUser;
 
@@ -41,6 +43,14 @@ class ThirdPartyServiceUnitTest {
         assertEquals(thirdPartyDTO.getUsername(), newThirdParty.getUsername());
         UUID key = newThirdParty.getHashedKey();
         assertNotNull(key);
+    }
+
+
+    @Test
+    @WithMockUser(roles = {"ADMIN"})
+    public void create_DuplicatedUsername_ThrowException() {
+        when(thirdPartyRepository.save(Mockito.any(ThirdParty.class))).thenThrow(DataIntegrityViolationException.class);
+        assertThrows(DuplicatedUsernameException.class, () -> thirdPartyService.create(thirdPartyDTO));
     }
 
     @Test
