@@ -73,4 +73,14 @@ public class GlobalExceptionHandler {
     public void duplicateUsernameExceptionHandler(DuplicatedUsernameException duplicatedUsernameException, HttpServletResponse response) throws IOException {
         response.sendError(HttpServletResponse.SC_CONFLICT, duplicatedUsernameException.getMessage());
     }
+
+    @ExceptionHandler(UserNotLoggedInException.class)
+    public void userNotLoggedIdHanlder(UserNotLoggedInException userNotLoggedInException, HttpServletResponse response) throws IOException {
+        response.sendError(HttpServletResponse.SC_NO_CONTENT, userNotLoggedInException.getMessage());
+    }
+
+    @ExceptionHandler(UserAlreadyLoggedInException.class)
+    public void userNotLoggedIdHanlder(UserAlreadyLoggedInException userAlreadyLoggedInException, HttpServletResponse response) throws IOException {
+        response.sendError(HttpServletResponse.SC_NO_CONTENT, userAlreadyLoggedInException.getMessage());
+    }
 }

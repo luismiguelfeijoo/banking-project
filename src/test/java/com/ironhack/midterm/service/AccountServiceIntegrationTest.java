@@ -92,6 +92,8 @@ class AccountServiceIntegrationTest {
         savings1 = savingsRepository.save(savings1);
         creditCard1 = new CreditCard(accountHolder1);
         creditCard1 = creditCardRepository.save(creditCard1);
+        accountHolder1.login();
+        accountHolderRepository.save(accountHolder1);
         studentChecking1 = new StudentChecking(new Money(new BigDecimal("2000")), accountHolder1);
         studentChecking1 = studentCheckingRepository.save(studentChecking1);
     }
@@ -174,11 +176,40 @@ class AccountServiceIntegrationTest {
 
     @Test
     @WithMockUser(roles = {"ACCOUNTHOLDER"})
-    public void getAllBalanceByUserId_NoAccounts_ThrowException() {
-        List<AccountBalance> results = accountService.getAllBalanceByUserId(new AccountHolder());
+    public void getAllBalanceByUserId_NoAccounts_EmptyList() {
+        accountRepository.deleteAll();
+        accountHolder3.login();
+        accountHolderRepository.save(accountHolder3);
+        List<AccountBalance> results = accountService.getAllBalanceByUserId(accountHolder3);
         assertEquals(0, results.size());
         //assertThrows(NoSuchAccountException.class, () -> accountService.getAllBalanceByUserId(accountHolder2) );
     }
+
+    @Test
+    @WithMockUser(roles = {"ACCOUNTHOLDER"})
+    public void getAllBalance_NotLoggedIn_EmptyList() {
+        accountHolder1.logout();
+        accountHolderRepository.save(accountHolder1);
+        assertThrows(NoPermissionForUserException.class, () -> accountService.getAllBalanceByUserId(accountHolder1) );
+    }
+
+    @Test
+    @WithMockUser(roles = {"ACCOUNTHOLDER"})
+    public void getBalanceById_NotLoggedIn_EmptyList() {
+        accountHolder1.logout();
+        accountHolderRepository.save(accountHolder1);
+        assertThrows(NoPermissionForUserException.class, () -> accountService.getBalanceById(checking1.getId(), accountHolder1) );
+    }
+
+    @Test
+    @WithMockUser(roles = {"ACCOUNTHOLDER"})
+    public void transfer_NotLoggedIn_EmptyList() {
+        accountHolder1.logout();
+        accountHolderRepository.save(accountHolder1);
+        assertThrows(NoPermissionForUserException.class, () -> accountService.transfer(checking1.getId(), accountHolder1, transferDTO));
+    }
+
+
 
     @Test
     public void getAllBalanceByUserId_NoUserLogged_ThrowException() {
@@ -232,6 +263,8 @@ class AccountServiceIntegrationTest {
         assertEquals(accountHolder1.getId(),result.getTransactionMakerId());
         assertEquals(AccountBalance.class, result.getUserAccount().getClass() );
         savings1 = savingsRepository.findById(savings1.getId()).get();
+        accountHolder1.login();
+        accountHolderRepository.save(accountHolder1);
         assertEquals(new BigDecimal("1000.00"), savings1.getBalance().getAmount());
     }
 
