@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout
+                    pattern="%style{%d{ISO8601}}{black} %highlight{%-5level }[%style{%t}{bright,blue}] %style{%C{1.}}{bright,yellow}: %msg%n%throwable" />
+        </Console>
+        <!--<NoSql name="databaseAppender">
+            <MongoDb databaseName="logs" collectionName="log_lab46" server="127.0.0.1" port="27017" />
+        </NoSql> -->
+        <File name="MyFile" fileName="logs/app.log">
+            <PatternLayout>
+                <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+            </PatternLayout>
+        </File>
+        <Async name="Async">
+            <AppenderRef ref="MyFile"/>
+        </Async>
+    </Appenders>
+
+    <Loggers>
+        <!-- LOG everything at INFO level -->
+        <logger name="com.ironhack.midterm" level="info">
+            <AppenderRef ref="Async" />
+            <!-- <AppenderRef ref="databaseAppender" /> -->
+        </logger>
+        <Root level="info">
+            <AppenderRef ref="Console" />
+        </Root>
+    </Loggers>
+</Configuration>

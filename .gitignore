@@ -29,4 +29,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
 *application.properties
+logs/
