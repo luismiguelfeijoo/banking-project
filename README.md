@@ -142,11 +142,13 @@ password: admin
 
 ### Things to improve
 
-Despite covering the requirements this project can always improve, some things I've come up with are:
+Despite covering most of the requirements this project can always improve, some things I've come up with are:
 
 * Make more integration tests
 * Adding a better login handler
 * Making logs more robust on exceptions 
+
+If you've all the way here let me know your thoughts!🤓
 
 
 
