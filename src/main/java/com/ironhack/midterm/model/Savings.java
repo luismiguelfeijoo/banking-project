@@ -2,6 +2,8 @@ package com.ironhack.midterm.model;
 
 import com.ironhack.midterm.utils.DateDifference;
 import com.ironhack.midterm.utils.Money;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.persistence.Entity;
 import javax.validation.constraints.DecimalMax;
@@ -15,7 +17,7 @@ public class Savings extends Checking {
     @DecimalMax(value = "0.5")
     private BigDecimal interestRate = new BigDecimal("0.0025");
 
-
+    private final static Logger LOGGER = LogManager.getLogger(Savings.class);
 
     public Savings() {
     }
@@ -53,8 +55,10 @@ public class Savings extends Checking {
     }
 
     public void applyInterestRate() {
+        LOGGER.info("[CHECKING FOR INTEREST RATE] - AccountId:" + getId() + " - AccountBalance:" + getBalance() + "lastDateOfCharge:" + getLastInterestApplyDate() + "interestRate:" + getInterestRate());
         int years = DateDifference.yearDifference(getLastInterestApplyDate());
         while (years >= 1) {
+            LOGGER.info("[APPLYING INTEREST RATE] - AccountId:" + getId() + " - AccountBalance:" + getBalance() + "lastDateOfCharge:" + getLastInterestApplyDate() + "interestRate:" + getInterestRate());
             getBalance().increaseByRate(BigDecimal.ONE.multiply(getInterestRate()).setScale(4, RoundingMode.HALF_EVEN));
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(getLastInterestApplyDate());

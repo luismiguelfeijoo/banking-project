@@ -25,13 +25,13 @@
         <logger name="com.ironhack.midterm" level="info">
             <AppenderRef ref="Async" />
         </logger>
-        <logger name="com.ironhack.midterm.service" level="info">
+        <logger name="com.ironhack.midterm.service" level="info" additivity="false">
             <AppenderRef ref="databaseAppenderForAudits" />
         </logger>
-        <logger name="com.ironhack.midterm.controller" level="info">
+        <logger name="com.ironhack.midterm.model" level="info" additivity="false">
             <AppenderRef ref="databaseAppenderForAudits" />
         </logger>
-        <Root level="info">
+        <Root level="info" >
             <AppenderRef ref="Console" />
             <AppenderRef ref="databaseAppender" />
         </Root>
