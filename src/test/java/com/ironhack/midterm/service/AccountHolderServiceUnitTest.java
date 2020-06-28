@@ -1,5 +1,6 @@
 package com.ironhack.midterm.service;
 
+import com.ironhack.midterm.exceptions.DuplicatedUsernameException;
 import com.ironhack.midterm.exceptions.NoSuchAccountHolderException;
 import com.ironhack.midterm.model.Account;
 import com.ironhack.midterm.model.AccountHolder;
@@ -9,9 +10,11 @@ import com.ironhack.midterm.repository.RoleRepository;
 import com.ironhack.midterm.utils.Address;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.test.context.support.WithMockUser;
 
@@ -63,6 +66,7 @@ class AccountHolderServiceUnitTest {
     @Test
     @WithMockUser(username="admin",roles={"ADMIN"})
     public void Create_ValidAccountHolderNoMailingAddress_AuthAdmin() {
+        when(accountHolderRepository.save(Mockito.any(AccountHolder.class))).thenReturn(accountHolder1);
         AccountHolder newAccountHolder = accountHolderService.create(accountHolder1);
         assertEquals(accountHolder1.getDateOfBirth(), newAccountHolder.getDateOfBirth());
         assertEquals(accountHolder1.getPrimaryAddress(), newAccountHolder.getPrimaryAddress());
@@ -72,10 +76,18 @@ class AccountHolderServiceUnitTest {
     @Test
     @WithMockUser(username="admin",roles={"ADMIN"})
     public void Create_ValidAccountHolderWithMailingAddress_AuthAdmin() {
+        when(accountHolderRepository.save(Mockito.any(AccountHolder.class))).thenReturn(accountHolder2);
         AccountHolder newAccountHolder = accountHolderService.create(accountHolder2);
         assertEquals(accountHolder2.getDateOfBirth(), newAccountHolder.getDateOfBirth());
         assertEquals(accountHolder2.getPrimaryAddress(), newAccountHolder.getPrimaryAddress());
         assertEquals(accountHolder2.getMailingAddress(), newAccountHolder.getMailingAddress());
+    }
+
+    @Test
+    @WithMockUser(username="admin",roles={"ADMIN"})
+    public void Create_RepeatedUsernameAccountHolder_ThrowException() {
+        when(accountHolderRepository.save(Mockito.any(AccountHolder.class))).thenThrow(DataIntegrityViolationException.class);
+        assertThrows(DuplicatedUsernameException.class, () -> accountHolderService.create(accountHolder2));
     }
 
     @Test

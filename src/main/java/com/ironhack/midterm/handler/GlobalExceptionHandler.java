@@ -68,4 +68,9 @@ public class GlobalExceptionHandler {
     public void fraudDetectionExceptionHanlder(FraudDetectionException fraudDetectionException, HttpServletResponse response) throws IOException {
         response.sendError(HttpServletResponse.SC_CONFLICT, fraudDetectionException.getMessage());
     }
+
+    @ExceptionHandler(DuplicatedUsernameException.class)
+    public void duplicateUsernameExceptionHandler(DuplicatedUsernameException duplicatedUsernameException, HttpServletResponse response) throws IOException {
+        response.sendError(HttpServletResponse.SC_CONFLICT, duplicatedUsernameException.getMessage());
+    }
 }

@@ -52,6 +52,24 @@ public class AdminControllerImpl implements AdminController {
         return newAccount;
     }
 
+    @Override
+    @GetMapping("/admin/accounts/{account-id}")
+    public AccountBalance accessAccount(@PathVariable(name = "account-id") Long accountId) {
+        return accountService.getBalanceById(accountId);
+    }
+
+    @Override
+    @PutMapping("/admin/accounts/{account-id}/debit")
+    public TransactionComplete debitAccount(@AuthenticationPrincipal SecuredUser securedUser, @PathVariable(name = "account-id") Long accountId, @Valid @RequestBody AmountDTO amountDTO) {
+        return accountService.debitAccount(accountId, securedUser, amountDTO);
+    }
+
+    @Override
+    @PutMapping("/admin/accounts/{account-id}/credit")
+    public TransactionComplete creditAccount(@AuthenticationPrincipal SecuredUser securedUser, @PathVariable(name = "account-id") Long accountId, @Valid @RequestBody AmountDTO amountDTO) {
+        return accountService.creditAccount(accountId, securedUser, amountDTO);
+    }
+
     @GetMapping("/admin/account-holders")
     public List<AccountHolder> getAccountHolders() {
         return accountHolderService.findAll();
@@ -73,23 +91,5 @@ public class AdminControllerImpl implements AdminController {
     @PostMapping("/admin/third-party")
     public ThirdParty addThirdParty(@Valid @RequestBody ThirdPartyDTO thirdPartyDTO) {
         return thirdPartyService.create(thirdPartyDTO);
-    }
-
-    @Override
-    @GetMapping("/admin/accounts/{account-id}")
-    public AccountBalance accessAccount(@PathVariable(name = "account-id") Long accountId) {
-        return accountService.getBalanceById(accountId);
-    }
-
-    @Override
-    @PutMapping("/admin/accounts/{account-id}/debit")
-    public TransactionComplete debitAccount(@AuthenticationPrincipal SecuredUser securedUser, @PathVariable(name = "account-id") Long accountId, @Valid @RequestBody AmountDTO amountDTO) {
-        return accountService.debitAccount(accountId, securedUser, amountDTO);
-    }
-
-    @Override
-    @PutMapping("/admin/accounts/{account-id}/credit")
-    public TransactionComplete creditAccount(@AuthenticationPrincipal SecuredUser securedUser, @PathVariable(name = "account-id") Long accountId, @Valid @RequestBody AmountDTO amountDTO) {
-        return accountService.creditAccount(accountId, securedUser, amountDTO);
     }
 }
