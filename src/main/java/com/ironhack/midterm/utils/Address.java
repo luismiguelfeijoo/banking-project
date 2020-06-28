@@ -1,19 +1,32 @@
 package com.ironhack.midterm.utils;
 
 import javax.persistence.Embeddable;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Embeddable
 public class Address {
+    @NotNull
+    @NotBlank
     private String street;
+    @NotNull
+    @NotBlank
     private String city;
+    @NotNull
+    @NotBlank
     private String country;
-    private Integer zip;
+    @NotNull
+    @NotBlank
+    private String zip;
 
-    public Address(String street, String city, String country, Integer zip) {
+    public Address(String street, String city, String country, String zip) {
         this.street = street;
         this.city = city;
         this.country = country;
         this.zip = zip;
+    }
+
+    public Address() {
     }
 
     public String getStreet() {
@@ -40,11 +53,11 @@ public class Address {
         this.country = country;
     }
 
-    public Integer getZip() {
+    public String getZip() {
         return zip;
     }
 
-    public void setZip(Integer zip) {
+    public void setZip(String zip) {
         this.zip = zip;
     }
 }

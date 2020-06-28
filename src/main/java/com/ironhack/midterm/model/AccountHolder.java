@@ -1,15 +1,19 @@
 package com.ironhack.midterm.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ironhack.midterm.utils.Address;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
 @Entity
-public class AccountHolder extends User {
+public class AccountHolder extends SecuredUser {
 
+    @NotNull
     private Date dateOfBirth;
     @Embedded
     private Address primaryAddress;
@@ -22,8 +26,10 @@ public class AccountHolder extends User {
     })
     private Address mailingAddress;
     @OneToMany(mappedBy = "primaryOwner")
+    @JsonIgnore
     private List<Account> primaryAccounts;
     @OneToMany(mappedBy = "secondaryOwner")
+    @JsonIgnore
     private List<Account> secondaryAccounts;
 
     // private boolean canAccess;
@@ -38,29 +44,32 @@ public class AccountHolder extends User {
     public AccountHolder() {
     }
 
-    public AccountHolder(String username, String name, Role role, String password, Date dateOfBirth, Address primaryAddress, Address mailingAddress, List<Account> primaryAccounts, List<Account> secondaryAccounts) {
+    public AccountHolder(@NotNull @NotEmpty String username, @NotNull @NotEmpty String name, @NotNull @NotEmpty String password, @NotNull Date dateOfBirth, Address primaryAddress) {
+        super(username, name, password);
         this.dateOfBirth = dateOfBirth;
         this.primaryAddress = primaryAddress;
-        this.mailingAddress = mailingAddress;
-        this.primaryAccounts = primaryAccounts;
-        this.secondaryAccounts = secondaryAccounts;
     }
+
 
     public Date getDateOfBirth() {
         return dateOfBirth;
     }
 
+    /*
     public void setDateOfBirth(Date dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
+     */
 
     public Address getPrimaryAddress() {
         return primaryAddress;
     }
 
+    /*
     public void setPrimaryAddress(Address primaryAddress) {
         this.primaryAddress = primaryAddress;
     }
+     */
 
     public Address getMailingAddress() {
         return mailingAddress;
@@ -70,6 +79,7 @@ public class AccountHolder extends User {
         this.mailingAddress = mailingAddress;
     }
 
+    /*
     public List<Account> getPrimaryAccounts() {
         return primaryAccounts;
     }
@@ -85,6 +95,7 @@ public class AccountHolder extends User {
     public void setSecondaryAccounts(List<Account> secondaryAccounts) {
         this.secondaryAccounts = secondaryAccounts;
     }
+     */
 
 
 }

@@ -3,6 +3,7 @@ package com.ironhack.midterm.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
+import java.util.Set;
 
 @Entity
 @Table
@@ -15,7 +16,7 @@ public class Role {
 
     @ManyToOne
     @JsonIgnore
-    private User user;
+    private SecuredUser user;
 
 
     public Long getId() {
@@ -34,11 +35,11 @@ public class Role {
         this.role = role;
     }
 
-    public User getUser() {
+    public SecuredUser getUsers() {
         return user;
     }
 
-    public void setUser(User user) {
+    public void setUser(SecuredUser user) {
         this.user = user;
     }
 }

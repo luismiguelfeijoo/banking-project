@@ -6,16 +6,17 @@ import com.ironhack.midterm.utils.Money;
 import javax.persistence.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
 
 @Entity
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+@Inheritance(strategy = InheritanceType.JOINED)
 public abstract class Account {
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private String secretKey;
 
     @Embedded
     @Valid
@@ -32,7 +33,15 @@ public abstract class Account {
     private AccountHolder secondaryOwner;
     private final BigDecimal penaltyFee = new BigDecimal("40");
 
-    private AccountStatus status;
+    @OneToMany(mappedBy = "debitedAccount")
+    private List<Transaction> debitTransactions;
+
+    @OneToMany(mappedBy = "creditedAccount")
+    private List<Transaction> creditTransactions;
+
+    @Enumerated(EnumType.STRING)
+    private AccountStatus status = AccountStatus.ACTIVE;
+    private Date lastInterestApplyDate;
 
     public Account() {
     }
@@ -54,9 +63,9 @@ public abstract class Account {
      **/
     public Account(Money balance, AccountHolder primaryOwner) {
         this.balance = balance;
-        this.primaryOwner = primaryOwner;
-        this.secondaryOwner = null;
-        this.status = AccountStatus.ACTIVE;
+        setPrimaryOwner(primaryOwner);
+        setSecondaryOwner(null);
+        setLastInterestApplyDate(new Date());
     }
 
     public Long getId() {
@@ -103,14 +112,40 @@ public abstract class Account {
         this.status = status;
     }
 
+    public Date getLastInterestApplyDate() {
+        return lastInterestApplyDate;
+    }
+
+    public void setLastInterestApplyDate(Date lastInterestApplyDate) {
+        this.lastInterestApplyDate = lastInterestApplyDate;
+    }
+
     /*
-    public String getSecretKey() {
-        return secretKey;
+    public List<Transaction> getDebitTransactions() {
+        return debitTransactions;
     }
 
-    public void setSecretKey(String secretKey) {
-        this.secretKey = secretKey;
+    public void setDebitTransactions(List<Transaction> debitTransactions) {
+        this.debitTransactions = debitTransactions;
     }
 
+    public List<Transaction> getCreditTransactions() {
+        return creditTransactions;
+    }
+
+    public void setCreditTransactions(List<Transaction> creditTransactions) {
+        this.creditTransactions = creditTransactions;
+    }
      */
+
+    public abstract void creditAccount(@PositiveOrZero Money amount);
+
+    public abstract void debitAccount (@PositiveOrZero Money amount);
+
+    public boolean hasAccess(Long userId) {
+        if (userId.equals(this.primaryOwner.getId())) {
+            return true;
+        } else return this.secondaryOwner != null && userId.equals(this.secondaryOwner.getId());
+    }
+
 }
