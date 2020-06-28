@@ -6,6 +6,8 @@ import com.ironhack.midterm.model.AccountHolder;
 import com.ironhack.midterm.model.CreditCard;
 import com.ironhack.midterm.repository.CreditCardRepository;
 import com.ironhack.midterm.utils.Money;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
@@ -17,9 +19,13 @@ public class CreditCardService {
     @Autowired
     private AccountHolderService accountHolderService;
 
+    private final static Logger LOGGER = LogManager.getLogger(CreditCardService.class);
+
+
     @Secured({"ROLE_ADMIN"})
     public CreditCard create(AccountDTO accountDTO) {
         // check for possible validation on fields ¿maybe can be instantiated with a balance > 0?
+        LOGGER.info("[CREATE CREDIT CARD ACCOUNT (admin)]");
         AccountHolder primaryOwner = null;
         AccountHolder secondaryOwner = null;
         CreditCard creditCard = null;
