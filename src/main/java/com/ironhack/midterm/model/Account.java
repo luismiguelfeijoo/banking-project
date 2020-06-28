@@ -2,6 +2,8 @@ package com.ironhack.midterm.model;
 
 import com.ironhack.midterm.enums.AccountStatus;
 import com.ironhack.midterm.utils.Money;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.persistence.*;
 import javax.validation.Valid;
@@ -42,6 +44,8 @@ public abstract class Account {
     @Enumerated(EnumType.STRING)
     private AccountStatus status = AccountStatus.ACTIVE;
     private Date lastInterestApplyDate;
+
+    private final static Logger LOGGER = LogManager.getLogger(Account.class);
 
     public Account() {
     }
@@ -143,6 +147,7 @@ public abstract class Account {
     public abstract void debitAccount (@PositiveOrZero Money amount);
 
     public boolean hasAccess(Long userId) {
+        LOGGER.info("[CHECKING ACCOUNT ACCESS] - AccountId:" + getId() + " - userId:" + userId + " - AccountType:" + this.getClass());
         if (userId.equals(this.primaryOwner.getId())) {
             return true;
         } else return this.secondaryOwner != null && userId.equals(this.secondaryOwner.getId());
