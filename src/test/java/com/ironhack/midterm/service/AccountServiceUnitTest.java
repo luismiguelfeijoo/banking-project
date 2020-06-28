@@ -48,6 +48,8 @@ class AccountServiceUnitTest {
     private UserRepository userRepository;
     @MockBean
     private ThirdPartyRepository thirdPartyRepository;
+    @MockBean
+    private AccountHolderRepository accountHolderRepository;
 
     AccountHolder accountHolder1;
     AccountHolder accountHolder2;
@@ -93,7 +95,9 @@ class AccountServiceUnitTest {
         creditCard1.setId((long) 5);
         studentChecking1 = new StudentChecking(new Money(new BigDecimal("2000")), accountHolder1);
         studentChecking1.setId((long) 6);
+        accountHolder1.login();
         List<Account> accountHolder1Accounts = Stream.of(checking1, checking3, savings1, creditCard1, studentChecking1).collect(Collectors.toList());
+        when(accountHolderRepository.findById(accountHolder1.getId())).thenReturn(Optional.of(accountHolder1));
         when(accountRepository.findById(checking1.getId())).thenReturn(Optional.of(checking1));
         when(accountRepository.findById(checking2.getId())).thenReturn(Optional.of(checking2));
         when(accountRepository.findById(creditCard1.getId())).thenReturn(Optional.of(creditCard1));
@@ -150,6 +154,7 @@ class AccountServiceUnitTest {
     @Test
     @WithMockUser(roles = {"ACCOUNTHOLDER"})
     public void getBalanceById_NOTOwnerOfAccount_ThrowException() {
+        when(accountHolderRepository.findById(accountHolder2.getId())).thenReturn(Optional.of(accountHolder2));
         assertThrows(NoPermissionForUserException.class, () -> accountService.getBalanceById(checking1.getId(),accountHolder2) );
     }
 
@@ -168,13 +173,6 @@ class AccountServiceUnitTest {
         }
     }
 
-    @Test
-    @WithMockUser(roles = {"ACCOUNTHOLDER"})
-    public void getAllBalanceByUserId_NoAccounts_ThrowException() {
-        List<AccountBalance> results = accountService.getAllBalanceByUserId(new AccountHolder());
-        assertEquals(0, results.size());
-        //assertThrows(NoSuchAccountException.class, () -> accountService.getAllBalanceByUserId(accountHolder2) );
-    }
 
     @Test
     public void getAllBalanceByUserId_NoUserLogged_ThrowException() {
