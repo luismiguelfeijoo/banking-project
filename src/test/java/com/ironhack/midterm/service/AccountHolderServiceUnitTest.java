@@ -2,7 +2,8 @@ package com.ironhack.midterm.service;
 
 import com.ironhack.midterm.exceptions.DuplicatedUsernameException;
 import com.ironhack.midterm.exceptions.NoSuchAccountHolderException;
-import com.ironhack.midterm.model.Account;
+import com.ironhack.midterm.exceptions.UserAlreadyLoggedInException;
+import com.ironhack.midterm.exceptions.UserNotLoggedInException;
 import com.ironhack.midterm.model.AccountHolder;
 import com.ironhack.midterm.model.Role;
 import com.ironhack.midterm.repository.AccountHolderRepository;
@@ -116,5 +117,35 @@ class AccountHolderServiceUnitTest {
         for (AccountHolder accountHolder: accountHolderList) {
             assertEquals(address, accountHolder.getPrimaryAddress());
         }
+    }
+
+    @Test
+    public void login_notLogged() {
+        accountHolder1.logout();
+        when(accountHolderRepository.findById(accountHolder1.getId())).thenReturn(Optional.of(accountHolder1));
+        accountHolderService.login(accountHolder1);
+        assertTrue(accountHolder1.isLoggedIn());
+        accountHolder1.logout();
+    }
+
+    @Test
+    public void login_AlreadyLogged() {
+        when(accountHolderRepository.findById(Mockito.anyLong())).thenThrow(UserAlreadyLoggedInException.class);
+        assertThrows(UserAlreadyLoggedInException.class, () -> accountHolderService.login(accountHolder1));
+    }
+
+    @Test
+    public void logout_loggedIn() {
+        accountHolder1.login();
+        when(accountHolderRepository.findById(accountHolder1.getId())).thenReturn(Optional.of(accountHolder1));
+        accountHolderService.logout(accountHolder1);
+        assertTrue(!accountHolder1.isLoggedIn());
+        accountHolder1.login();
+    }
+
+    @Test
+    public void logout_alreadyLoggedOut() {
+        when(accountHolderRepository.findById(Mockito.anyLong())).thenThrow(UserNotLoggedInException.class);
+        assertThrows(UserNotLoggedInException.class, () -> accountHolderService.logout(accountHolder1));
     }
 }

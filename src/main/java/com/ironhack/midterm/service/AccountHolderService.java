@@ -1,9 +1,12 @@
 package com.ironhack.midterm.service;
 
+import com.ironhack.midterm.exceptions.UserAlreadyLoggedInException;
 import com.ironhack.midterm.exceptions.DuplicatedUsernameException;
 import com.ironhack.midterm.exceptions.NoSuchAccountHolderException;
+import com.ironhack.midterm.exceptions.UserNotLoggedInException;
 import com.ironhack.midterm.model.AccountHolder;
 import com.ironhack.midterm.model.Role;
+import com.ironhack.midterm.model.SecuredUser;
 import com.ironhack.midterm.repository.AccountHolderRepository;
 import com.ironhack.midterm.repository.RoleRepository;
 import org.apache.logging.log4j.LogManager;
@@ -14,7 +17,6 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.ConstraintViolationException;
 import java.util.List;
 
 @Service
@@ -53,5 +55,19 @@ public class AccountHolderService {
     @Secured({"ROLE_ADMIN"})
     public List<AccountHolder> findAll() {
         return accountHolderRepository.findAll();
+    }
+
+    public void login(SecuredUser securedUser) {
+        AccountHolder user = accountHolderRepository.findById(securedUser.getId()).orElseThrow(() -> new NoSuchAccountHolderException("Wrong username/password combination"));
+        if (user.isLoggedIn()) throw new UserAlreadyLoggedInException("The user is already Logged In");
+        user.login();
+        accountHolderRepository.save(user);
+    }
+
+    public void logout(SecuredUser securedUser) {
+        AccountHolder user = accountHolderRepository.findById(securedUser.getId()).orElseThrow(() -> new NoSuchAccountHolderException("Wrong username/password combination"));
+        if (!user.isLoggedIn()) throw new UserNotLoggedInException("The user is already Logged Out");
+        user.logout();
+        accountHolderRepository.save(user);
     }
 }

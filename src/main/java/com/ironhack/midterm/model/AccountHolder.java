@@ -8,7 +8,6 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 public class AccountHolder extends SecuredUser {
@@ -25,6 +24,8 @@ public class AccountHolder extends SecuredUser {
             @AttributeOverride(name="zip", column=@Column(name="mailing_zip"))
     })
     private Address mailingAddress;
+
+    private boolean loggedIn;
     @OneToMany(mappedBy = "primaryOwner")
     @JsonIgnore
     private List<Account> primaryAccounts;
@@ -48,6 +49,7 @@ public class AccountHolder extends SecuredUser {
         super(username, name, password);
         this.dateOfBirth = dateOfBirth;
         this.primaryAddress = primaryAddress;
+        setLoggedIn(false);
     }
 
 
@@ -97,5 +99,23 @@ public class AccountHolder extends SecuredUser {
     }
      */
 
+    public boolean isLoggedIn() {
+        return loggedIn;
+    }
 
+    private void setLoggedIn(boolean loggedIn) {
+        this.loggedIn = loggedIn;
+    }
+
+    public void login() {
+        if (!isLoggedIn()) {
+            setLoggedIn(true);
+        }
+    }
+
+    public void logout() {
+        if (isLoggedIn()) {
+           setLoggedIn(false);
+        }
+    }
 }

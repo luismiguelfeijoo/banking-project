@@ -25,6 +25,8 @@ public class AccountService {
     @Autowired
     private AccountRepository accountRepository;
     @Autowired
+    private AccountHolderRepository accountHolderRepository;
+    @Autowired
     private CreditCardRepository creditCardRepository;
     @Autowired
     private CheckingRepository checkingRepository;
@@ -43,7 +45,9 @@ public class AccountService {
 
     @Secured({"ROLE_ACCOUNTHOLDER"})
     public AccountBalance getBalanceById(Long accountId, SecuredUser securedUser) {
+        AccountHolder user = accountHolderRepository.findById(securedUser.getId()).orElseThrow(() -> new NoSuchAccountHolderException("There's no account holder with provided id"));
         LOGGER.info("[ACCOUNT ACCESS INIT (user)] - UserId: " + securedUser.getId() + " - AccountId: " + accountId);
+        if (!user.isLoggedIn()) throw new NoPermissionForUserException("You must be logged in to access this page");
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
         if (account instanceof CreditCard) {
             ((CreditCard) account).applyInterestRate();
@@ -80,7 +84,9 @@ public class AccountService {
 
     @Secured({"ROLE_ACCOUNTHOLDER"})
     public List<AccountBalance> getAllBalanceByUserId(SecuredUser securedUser) {
+        AccountHolder user = accountHolderRepository.findById(securedUser.getId()).orElseThrow(() -> new NoSuchAccountHolderException("There's no account holder with provided id"));
         LOGGER.info("[ALL ACCOUNTS ACCESS INIT (user)] - UserId: " + securedUser.getId());
+        if (!user.isLoggedIn()) throw new NoPermissionForUserException("You must be logged in to access this page");
         List<Account> accounts = accountRepository.findByPrimaryOwnerId(securedUser.getId());
         //if (accounts.size() == 0) throw new NoSuchAccountException("User doesn't have registered accounts");
         return accounts.stream().map(account -> new AccountBalance(account.getBalance())).collect(Collectors.toList());
@@ -98,7 +104,9 @@ public class AccountService {
     @Secured({"ROLE_ACCOUNTHOLDER"})
     @Transactional(noRollbackFor = {FraudDetectionException.class})
     public TransactionComplete transfer(Long accountId, SecuredUser securedUser, TransferDTO transferDTO) {
+        AccountHolder user = accountHolderRepository.findById(securedUser.getId()).orElseThrow(() -> new NoSuchAccountHolderException("There's no account holder with provided id"));
         LOGGER.info("[TRANSFER INIT] - UserId: " + securedUser.getId() + " - MakerAccountId: " + accountId + " - Amount:" + transferDTO.getAmount() + " - ReceiverAccountId: " + transferDTO.getReceiverAccountId());
+        if (!user.isLoggedIn()) throw new NoPermissionForUserException("You must be logged in to access this page");
         Account account = accountRepository.findById(accountId).orElseThrow(() -> new NoSuchAccountException("There's no account with provided ID"));
         if (!account.hasAccess(securedUser.getId())) throw new NoPermissionForUserException("You don't have permission to do this transfer");
         if (account.getStatus() == AccountStatus.FROZEN) throw new FraudDetectionException("Your account is blocked for fraud inspection purposes, please contact customer service");
@@ -134,8 +142,8 @@ public class AccountService {
                 throw new NoPermissionForUserException("The user doesn't correspond with the owner of the account");
             }
         }
-        User transactionMaker = userRepository.findById(securedUser.getId()).orElseThrow(() -> new NoSuchUserException("There's no user with provided Id"));
-        Transaction transaction = new Transaction(new Money(transferDTO.getAmount()), new Date(), transactionMaker);
+        //User transactionMaker = userRepository.findById(securedUser.getId()).orElseThrow(() -> new NoSuchUserException("There's no user with provided Id"));
+        Transaction transaction = new Transaction(new Money(transferDTO.getAmount()), new Date(), user);
         if (account instanceof CreditCard) {
             CreditCard creditCard = (CreditCard) account;
             creditCard.debitAccount(new Money(transferDTO.getAmount()));
@@ -162,7 +170,7 @@ public class AccountService {
         LOGGER.info("[TRANSFER ACCEPTED AND SAVED] - UserId: " + securedUser.getId() + " - MakerAccountId: " + accountId + " - Amount:" + transferDTO.getAmount() + " - ReceiverAccountId: " + transferDTO.getReceiverAccountId());
         TransactionComplete response = new TransactionComplete();
         response.setAmount(transferDTO.getAmount());
-        response.setTransactionMakerId(transactionMaker.getId());
+        response.setTransactionMakerId(user.getId());
         response.setUserAccount(new AccountBalance(doneTransaction.getDebitedAccount().getBalance()));
         return response;
     }
