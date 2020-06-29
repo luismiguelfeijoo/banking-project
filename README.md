@@ -148,7 +148,7 @@ Given more time this project could improve on different aspects, some things I'v
 * Adding a better way to handle login
 * Making logs more robust on exceptions 
 
-If you've come down all the way here don't forget to let me know your thoughts!🤓
+If you've come all the way here, remember to let me know your thoughts!🤓
 
 
 
