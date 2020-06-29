@@ -127,11 +127,26 @@ All account access and transactions must be logged in a mongo database with user
 
 To check the functionalities better I've made a postman <a href="https://documenter.getpostman.com/view/10352687/T17AkWme?version=latest">documentation</a> to check out the endpoints and better understand how this project works!
 
-### Take to account
+
+### Entities 
+
+You can take a look at the entity-relations diagram shown below:
+
+<img href="https://i.imgur.com/73TfPYE.jpg" />
+
+### Service
+
+Al transactions and account access are made by the ```AccountService```, protecting routes and methods as convinient and checking for ```Account Holder``` log status.
+
+### Fraud
+
+Every fraud detected will result on getting the bank account in question ```FROZEN```, as for now there are no ways to active accounts except for messing with the DB directly
+
+### Take into account
 
 All the logs are stores on a mongo database, separated on 2 different collections for auditing and app managing.
 
-Before running the project remember to create a schema on MySQL and enter your server's password on the ```application.properties```
+Before running the project remember to create a schema on MySQL and enter your server's password and schema created on the ```application.properties```
 
 To get up and running the project will provide an initial Admin User registered with the following credentials:
 
