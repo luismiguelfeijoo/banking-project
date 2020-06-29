@@ -130,9 +130,9 @@ To check the functionalities better I've made a postman <a href="https://documen
 
 ### Entities 
 
-You can take a look at the entity-relations diagram shown below:
+You can take a look at the entity-relationship diagram shown below:
 
-<img href="https://i.imgur.com/73TfPYE.jpg" />
+<img alt="entity-relationship-model" src="https://i.imgur.com/73TfPYE.jpg" />
 
 ### Service
 
